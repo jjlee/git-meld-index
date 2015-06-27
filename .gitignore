@@ -1,0 +1,8 @@
+*.py[co]
+__pycache__/
+*~
+.#*
+build/
+dist/
+sdist/
+*.egg-info/

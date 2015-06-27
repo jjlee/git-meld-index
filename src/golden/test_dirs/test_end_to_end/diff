@@ -1,0 +1,52 @@
+diff --git a/sub/dir/deleted b/sub/dir/deleted
+deleted file mode 100644
+index 71779d2..0000000
+--- a/sub/dir/deleted
++++ /dev/null
+@@ -1 +0,0 @@
+-deleted
+diff --git a/sub/dir/deleted_from_index b/sub/dir/deleted_from_index
+index bf72962..2b9f771 100644
+--- a/sub/dir/deleted_from_index
++++ b/sub/dir/deleted_from_index
+@@ -1 +1 @@
+-sub/dir/deleted_from_index edited by meld
++deleted from index
+diff --git a/sub/dir/modified b/sub/dir/modified
+index 94b7a2a..11fc645 100644
+--- a/sub/dir/modified
++++ b/sub/dir/modified
+@@ -1 +1,2 @@
+-sub/dir/modified edited by meld
++modified (initial)
++modified (modified)
+diff --git a/sub/dir/modified_staged b/sub/dir/modified_staged
+index 2cbaa08..0294a09 100644
+--- a/sub/dir/modified_staged
++++ b/sub/dir/modified_staged
+@@ -1 +1,2 @@
+-sub/dir/modified_staged edited by meld
++modified staged (initial)
++modified staged (modified)
+diff --git a/sub/dir/new_staged b/sub/dir/new_staged
+index 1bdea3e..2ce75e2 100644
+--- a/sub/dir/new_staged
++++ b/sub/dir/new_staged
+@@ -1 +1 @@
+-sub/dir/new_staged edited by meld
++new staged
+diff --git a/sub/dir/partially_staged b/sub/dir/partially_staged
+index fbebb3d..c5a3e2e 100644
+--- a/sub/dir/partially_staged
++++ b/sub/dir/partially_staged
+@@ -1 +1,2 @@
+-sub/dir/partially_staged edited by meld
++partially staged
++more
+diff --git a/sub/dir/untracked b/sub/dir/untracked
+index 76197a2..5a72eb2 100644
+--- a/sub/dir/untracked
++++ b/sub/dir/untracked
+@@ -1 +1 @@
+-sub/dir/untracked edited by meld
++untracked

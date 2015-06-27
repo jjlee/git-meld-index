@@ -1,0 +1,35 @@
+diff --git a/sub/dir/deleted_from_index b/sub/dir/deleted_from_index
+deleted file mode 100644
+index 2b9f771..0000000
+--- a/sub/dir/deleted_from_index
++++ /dev/null
+@@ -1 +0,0 @@
+-deleted from index
+diff --git a/sub/dir/deleted_from_index_and_working_tree b/sub/dir/deleted_from_index_and_working_tree
+deleted file mode 100644
+index 6f8a24e..0000000
+--- a/sub/dir/deleted_from_index_and_working_tree
++++ /dev/null
+@@ -1 +0,0 @@
+-deleted from index and working tree
+diff --git a/sub/dir/modified_staged b/sub/dir/modified_staged
+index 3284ab7..0294a09 100644
+--- a/sub/dir/modified_staged
++++ b/sub/dir/modified_staged
+@@ -1 +1,2 @@
+ modified staged (initial)
++modified staged (modified)
+diff --git a/sub/dir/new_staged b/sub/dir/new_staged
+new file mode 100644
+index 0000000..2ce75e2
+--- /dev/null
++++ b/sub/dir/new_staged
+@@ -0,0 +1 @@
++new staged
+diff --git a/sub/dir/partially_staged b/sub/dir/partially_staged
+new file mode 100644
+index 0000000..d2e14c5
+--- /dev/null
++++ b/sub/dir/partially_staged
+@@ -0,0 +1 @@
++partially staged

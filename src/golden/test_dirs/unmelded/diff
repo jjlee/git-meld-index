@@ -1,0 +1,21 @@
+diff --git a/sub/dir/deleted b/sub/dir/deleted
+deleted file mode 100644
+index 71779d2..0000000
+--- a/sub/dir/deleted
++++ /dev/null
+@@ -1 +0,0 @@
+-deleted
+diff --git a/sub/dir/modified b/sub/dir/modified
+index 3755e5a..11fc645 100644
+--- a/sub/dir/modified
++++ b/sub/dir/modified
+@@ -1 +1,2 @@
+ modified (initial)
++modified (modified)
+diff --git a/sub/dir/partially_staged b/sub/dir/partially_staged
+index d2e14c5..c5a3e2e 100644
+--- a/sub/dir/partially_staged
++++ b/sub/dir/partially_staged
+@@ -1 +1,2 @@
+ partially staged
++more

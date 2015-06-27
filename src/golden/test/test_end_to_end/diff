@@ -1,0 +1,52 @@
+diff --git a/deleted b/deleted
+deleted file mode 100644
+index 71779d2..0000000
+--- a/deleted
++++ /dev/null
+@@ -1 +0,0 @@
+-deleted
+diff --git a/deleted_from_index b/deleted_from_index
+index 1137f87..2b9f771 100644
+--- a/deleted_from_index
++++ b/deleted_from_index
+@@ -1 +1 @@
+-deleted_from_index edited by meld
++deleted from index
+diff --git a/modified b/modified
+index 6c37dfc..11fc645 100644
+--- a/modified
++++ b/modified
+@@ -1 +1,2 @@
+-modified edited by meld
++modified (initial)
++modified (modified)
+diff --git a/modified_staged b/modified_staged
+index 8744fdd..0294a09 100644
+--- a/modified_staged
++++ b/modified_staged
+@@ -1 +1,2 @@
+-modified_staged edited by meld
++modified staged (initial)
++modified staged (modified)
+diff --git a/new_staged b/new_staged
+index 784ffb4..2ce75e2 100644
+--- a/new_staged
++++ b/new_staged
+@@ -1 +1 @@
+-new_staged edited by meld
++new staged
+diff --git a/partially_staged b/partially_staged
+index 972b53d..c5a3e2e 100644
+--- a/partially_staged
++++ b/partially_staged
+@@ -1 +1,2 @@
+-partially_staged edited by meld
++partially staged
++more
+diff --git a/untracked b/untracked
+index 6665f52..5a72eb2 100644
+--- a/untracked
++++ b/untracked
+@@ -1 +1 @@
+-untracked edited by meld
++untracked
