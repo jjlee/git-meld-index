@@ -44,10 +44,6 @@ Or for a specific release:
 pip install https://github.com/jjlee/git-meld-index/archive/0.1.0.zip
 ```
 
-Or you can just download and run [the Python
-file](https://raw.githubusercontent.com/jjlee/git-meld-index/master/src/git_meld_index.py)
-file direct.
-
 
 ## Usage
 
