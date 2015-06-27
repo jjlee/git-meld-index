@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 # The following line has to be the first non-blank / non-comment line after the
 # last __future__ import, for setup.py to read it.
-__version__ = "unreleased_version"
+__version__ = "0.1.0"
 
 """Interactively stage changes to the git index (also known as the git staging
 area) using any git difftool (such as meld).
