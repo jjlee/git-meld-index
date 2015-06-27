@@ -34,11 +34,15 @@ it should work on BSDs or OS X.
 
 ## Install
 
+```
 pip install https://github.com/jjlee/git-meld-index/archive/master.zip
+```
 
 Or for a specific release:
 
+```
 pip install https://github.com/jjlee/git-meld-index/archive/0.1.0.zip
+```
 
 Or you can just download and run [the Python
 file](https://raw.githubusercontent.com/jjlee/git-meld-index/src/git_meld_index.py)
