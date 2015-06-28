@@ -16,17 +16,11 @@ This is similar to the functionality of `git add -p`, and `git add
 * navigate to a change without saying 'n' to every change you want to skip
 
 
-## Configuration
-
-Configuration is the same as for git difftool.  See the [git docs][git-docs]
-
-  [git-docs]: https://git-scm.com/documentation
-
-
 ## Requirements
 
 I'm using git 1.9.1 and meld 1.8.4.  I expect later versions will
-work.
+work.  It works with Python 2.7 (likely 2.6 also).  Python 3 probably
+doesn't work yet.
 
 There is no support for MS Windows.  I have only tested on Linux but
 it should work on BSDs or OS X.
@@ -34,15 +28,39 @@ it should work on BSDs or OS X.
 
 ## Install
 
+To install a specific release:
+
+```
+pip install https://github.com/jjlee/git-meld-index/archive/<release tag here>.zip
+```
+
+Or from HEAD of master branch:
+
 ```
 pip install https://github.com/jjlee/git-meld-index/archive/master.zip
 ```
 
-Or for a specific release:
+If you want to avoid installers you can clone the repo run the script
+directly:
 
 ```
-pip install https://github.com/jjlee/git-meld-index/archive/0.1.0.zip
+git clone https://github.com/jjlee/git-meld-index.git
+cd git-meld-index
+env PATH="$PATH":bin python src/git_meld_index.py
 ```
+
+
+## Configuration
+
+Configuration is the same as for git difftool.  See the [git docs][git-docs]
+
+Quick start: run:
+
+```
+git config --global diff.tool meld
+```
+
+  [git-docs]: https://git-scm.com/documentation
 
 
 ## Usage
