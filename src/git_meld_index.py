@@ -4,10 +4,6 @@ from __future__ import absolute_import
 # last __future__ import, for setup.py to read it.
 __version__ = "0.1.0"
 
-"""Interactively stage changes to the git index (also known as the git staging
-area) using any git difftool (such as meld).
-"""
-
 import argparse
 import functools
 import itertools
@@ -79,11 +75,11 @@ class ReadableEnv(object):
         self._env = env
         self._read_env = read_env
 
-    def cmd(self, args, input=None):
-        return self._env.cmd(args, input)
+    def cmd(self, args, input=None, tty=False):
+        return self._env.cmd(args, input, tty)
 
-    def read_cmd(self, args, input=None):
-        return self._read_env.cmd(args, input)
+    def read_cmd(self, args, input=None, tty=False):
+        return self._read_env.cmd(args, input, tty)
 
     def wrap(self, wrapper):
         """Return a ReadableEnv wrapped with given wrapper.
@@ -101,21 +97,30 @@ class BasicEnv(object):
     """An environment in which to run a program.
     """
 
-    def cmd(self, args, input=None):
+    def cmd(self, args, input=None, tty=False):
         """Run a program, read its output and wait for it to exit.
+
+        Args:
+            input (bytes): data to send to program's stdin
+            tty (bool): program requires a tty to run correctly (e.g. vimdiff).
+              In this case, input is ignored and output is not read.
         """
-        if input is not None:
-            stdin = subprocess.PIPE
+        if tty:
+            process = subprocess.Popen(args)
+            process.wait()
         else:
-            stdin = None
-        process = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=stdin)
-        output, stderr_output = process.communicate(input)
-        retcode = process.poll()
-        if retcode:
-            raise CalledProcessError(retcode, args, output, stderr_output)
-        process.stdout_output = output
-        process.stderr_output = stderr_output
+            if input is not None:
+                stdin = subprocess.PIPE
+            else:
+                stdin = None
+            process = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=stdin)
+            output, stderr_output = process.communicate(input)
+            retcode = process.poll()
+            if retcode:
+                raise CalledProcessError(retcode, args, output, stderr_output)
+            process.stdout_output = output
+            process.stderr_output = stderr_output
         return process
 
     @classmethod
@@ -130,8 +135,8 @@ class PrefixCmdEnv(object):
         self._prefix_cmd = prefix_cmd
         self._env = env
 
-    def cmd(self, args, input=None):
-        return self._env.cmd(self._prefix_cmd + args, input)
+    def cmd(self, args, input=None, tty=False):
+        return self._env.cmd(self._prefix_cmd + args, input, tty)
 
     @classmethod
     def make_readable(cls, prefix_cmd, readable_env):
@@ -143,12 +148,12 @@ class VerboseWrapper(object):
     def __init__(self, env):
         self._env = env
 
-    def cmd(self, args, input=None):
+    def cmd(self, args, input=None, tty=False):
         if input is not None:
             print "input:"
             pprint.pprint(input)
         pprint.pprint(args)
-        return self._env.cmd(args, input)
+        return self._env.cmd(args, input, tty)
 
     @classmethod
     def make_readable(cls, readable_env):
@@ -160,7 +165,7 @@ class NullWrapper(object):
     def __init__(self, env):
         self._env = env
 
-    def cmd(self, args, input=None):
+    def cmd(self, args, input=None, tty=False):
         return self._env.cmd(["true"])
 
     @classmethod
@@ -186,18 +191,22 @@ class WorkArea(object):
             dir_ = suggested_dir
         return dir_
 
-    def _meld(self, left_dir, right_dir):
+    def _meld(self, left_dir, right_dir, tool, extcmd):
         # usually working tree on left, index on right
         env = PrefixCmdEnv.make_readable(in_dir(self._work_dir), self._env)
-        env.cmd(["git-meld-index-run-merge-tool", left_dir, right_dir])
+        if tool:
+            env = PrefixCmdEnv.make_readable(
+                ["env", "GIT_DIFF_TOOL=" + tool], env)
+        cmd = extcmd if extcmd is not None else "git-meld-index-run-merge-tool"
+        env.cmd([cmd, left_dir, right_dir], tty=True)
 
     def _apply(self, view, dir_):
         view.apply(self._env, dir_)
 
-    def meld(self, left_view, right_view):
+    def meld(self, left_view, right_view, tool=None, extcmd=None):
         left_dir = self._write(left_view)
         right_dir = self._write(right_view)
-        self._meld(left_dir, right_dir)
+        self._meld(left_dir, right_dir, tool, extcmd)
         self._apply(left_view, left_dir)
         self._apply(right_view, right_dir)
 
@@ -493,13 +502,48 @@ def repo_dir_cmd():
 
 
 def _main(prog, args):
-    parser = argparse.ArgumentParser(prog=prog)
+    # This is not __doc__ because it's tiresome for setup.py to parse out
+    # __version__ otherwise
+    description = """\
+Interactively stage changes to the git index (also known as the git staging
+area) using any git difftool (such as meld).
+"""
+    parser = argparse.ArgumentParser(
+        prog=os.path.basename(prog), description=description)
     add_basic_env_arguments(parser.add_argument)
-    parser.add_argument("--work-dir")
-    parser.add_argument("--no-cleanup", dest="cleanup",
-                        default=True, action="store_false")
-    parser.add_argument("left", nargs="?", default=None)
-    parser.add_argument("right", nargs="?", default=None)
+    # Note there's also a manpage, which is what git meld-index --help shows
+    parser.add_argument(
+        "--tool", "-t", dest="tool",
+        help=("Use the diff tool specified by <tool>. Valid values include "
+              "meld and kdiff3. Run git meld-index --tool-help for the list "
+              "of valid <tool> settings."))
+    parser.add_argument(
+        "--tool-help", default=False, action="store_true",
+        help="Print a list of diff tools that may be used with --tool.")
+    parser.add_argument(
+        "--extcmd", "-x",
+        help=("Specify a custom command for viewing and editing diffs.  "
+              "git-meld-index ignores the configured defaults and runs "
+              "$command $LEFT $RIGHT when this option is specified."))
+    parser.add_argument(
+        "--gui", "-g", default=False, action="store_true",
+        help=("When git-difftool is invoked with the -g or --gui option the "
+              "default diff tool will be read from the configured "
+              "diff.guitool variable instead of diff.tool."))
+    parser.add_argument(
+        "--work-dir",
+        help="Directory to use instead of temporary directory.  "
+        "This won't be removed on exit.")
+    parser.add_argument(
+        "--no-cleanup", dest="cleanup",
+        default=True, action="store_false",
+        help="Don't remove temporary files passed to difftool")
+    parser.add_argument(
+        "left", nargs="?", default=None,
+        help="Not really useful as yet hence undocumented")
+    parser.add_argument(
+        "right", nargs="?", default=None,
+        help="Not really useful as yet hence undocumented")
     arguments = parser.parse_args(args)
     work_dir = arguments.work_dir
     if arguments.cleanup:
@@ -507,6 +551,10 @@ def _main(prog, args):
     else:
         cleanups = NullCleanups()
     env = get_env_from_arguments(arguments)
+    if arguments.tool_help:
+        print env.cmd(["git", "mergetool", "--tool-help"]).stdout_output
+        return 0
+
     repo_dir = trim(env.read_cmd(repo_dir_cmd()).stdout_output, suffix="\n")
     left = arguments.left
     if left is None:
@@ -514,6 +562,14 @@ def _main(prog, args):
     right = arguments.right
     if right is None:
         right = "index:" + repo_dir
+    tool = arguments.tool
+    if arguments.gui:
+        try:
+            tool = trim(
+                env.cmd(["git", "config", "-z", "diff.guitool"]).stdout_output,
+                suffix="\0")
+        except CalledProcessError:
+            pass
     with cleanups:
         make_temp_dir = TempMaker(cleanups.add_cleanup).make_temp_dir
         if work_dir is None:
@@ -523,11 +579,12 @@ def _main(prog, args):
         if left_view is None:
             parser.error("left ".format(left))
         right_view = make_view(right)
-        work_area.meld(left_view, right_view)
+        work_area.meld(left_view, right_view, tool, arguments.extcmd)
+    return 0
 
 
 def main():
-    _main(sys.argv[0], sys.argv[1:])
+    sys.exit(_main(sys.argv[0], sys.argv[1:]))
 
 
 if __name__ == "__main__":

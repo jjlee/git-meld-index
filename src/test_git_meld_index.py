@@ -331,7 +331,7 @@ rsync -a {new_content}/ "$right"
         work_area = git_meld_index.WorkArea(meld_env, work_dir)
         left_view = git_meld_index.make_view("working:" + repo_path)
         right_view = git_meld_index.make_view("index:" + repo_path)
-        work_area.meld(left_view, right_view)
+        work_area.meld(left_view, right_view, tool="meld")
 
         left, right = get_recorded_listings()
         self.assertEqual(sorted(left), sorted(working_tree_sources))
