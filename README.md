@@ -97,24 +97,24 @@ Patches welcome.
 
 1. This is new, beta quality code and will have bugs.
 
-For example, the following have not received any attention whatsoever:
+	For example, the following have not received any attention whatsoever:
 
-* In-progress merges and rebases
-* Symbolic links
-* Git submodules
+	* In-progress merges and rebases
+	* Symbolic links
+	* Git submodules
 
-File moves haven't received much attention either.  There are probably
-other cases which haven't received proper testing also.
+	File moves haven't received much attention either.  There are probably
+	other cases which haven't received proper testing also.
 
-Code loss is conceivable but unlikely since it only changes the index,
-not the working tree, and changes in the index are normally present
-also in the working tree.  You should be a bit more cautious if you
-have changes in your index that you've removed from your working tree
-(this is not a common thing to do).
+	Code loss is conceivable but unlikely since it only changes the index,
+	not the working tree, and changes in the index are normally present
+	also in the working tree.  You should be a bit more cautious if you
+	have changes in your index that you've removed from your working tree
+	(this is not a common thing to do).
 
-I expect but haven't tested that submodules are ignored, and symlinks,
-file moves, and in-progress merges and rebases are not treated
-specially, which is probably at least somewhat reasonable.
+	I expect but haven't tested that submodules are ignored, and symlinks,
+	file moves, and in-progress merges and rebases are not treated
+	specially, which is probably at least somewhat reasonable.
 
 2. If this functionality gets implemented in git itself I'll likely
 stop maintaining this.  I have no involvement with development of git,
