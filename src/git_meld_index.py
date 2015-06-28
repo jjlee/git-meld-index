@@ -499,11 +499,20 @@ area) using any git difftool (such as meld).
         prog=os.path.basename(prog), description=description)
     add_basic_env_arguments(parser.add_argument)
     # Note there's also a manpage, which is what git meld-index --help shows
-    parser.add_argument("--work-dir")
-    parser.add_argument("--no-cleanup", dest="cleanup",
-                        default=True, action="store_false")
-    parser.add_argument("left", nargs="?", default=None)
-    parser.add_argument("right", nargs="?", default=None)
+    parser.add_argument(
+        "--work-dir",
+        help="Directory to use instead of temporary directory.  "
+        "This won't be removed on exit.")
+    parser.add_argument(
+        "--no-cleanup", dest="cleanup",
+        default=True, action="store_false",
+        help="Don't remove temporary files passed to difftool")
+    parser.add_argument(
+        "left", nargs="?", default=None,
+        help="Not really useful as yet hence undocumented")
+    parser.add_argument(
+        "right", nargs="?", default=None,
+        help="Not really useful as yet hence undocumented")
     arguments = parser.parse_args(args)
     work_dir = arguments.work_dir
     if arguments.cleanup:
