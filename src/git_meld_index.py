@@ -75,11 +75,11 @@ class ReadableEnv(object):
         self._env = env
         self._read_env = read_env
 
-    def cmd(self, args, input=None):
-        return self._env.cmd(args, input)
+    def cmd(self, args, input=None, tty=False):
+        return self._env.cmd(args, input, tty)
 
-    def read_cmd(self, args, input=None):
-        return self._read_env.cmd(args, input)
+    def read_cmd(self, args, input=None, tty=False):
+        return self._read_env.cmd(args, input, tty)
 
     def wrap(self, wrapper):
         """Return a ReadableEnv wrapped with given wrapper.
@@ -97,21 +97,30 @@ class BasicEnv(object):
     """An environment in which to run a program.
     """
 
-    def cmd(self, args, input=None):
+    def cmd(self, args, input=None, tty=False):
         """Run a program, read its output and wait for it to exit.
+
+        Args:
+            input (bytes): data to send to program's stdin
+            tty (bool): program requires a tty to run correctly (e.g. vimdiff).
+              In this case, input is ignored and output is not read.
         """
-        if input is not None:
-            stdin = subprocess.PIPE
+        if tty:
+            process = subprocess.Popen(args)
+            process.wait()
         else:
-            stdin = None
-        process = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=stdin)
-        output, stderr_output = process.communicate(input)
-        retcode = process.poll()
-        if retcode:
-            raise CalledProcessError(retcode, args, output, stderr_output)
-        process.stdout_output = output
-        process.stderr_output = stderr_output
+            if input is not None:
+                stdin = subprocess.PIPE
+            else:
+                stdin = None
+            process = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=stdin)
+            output, stderr_output = process.communicate(input)
+            retcode = process.poll()
+            if retcode:
+                raise CalledProcessError(retcode, args, output, stderr_output)
+            process.stdout_output = output
+            process.stderr_output = stderr_output
         return process
 
     @classmethod
@@ -126,8 +135,8 @@ class PrefixCmdEnv(object):
         self._prefix_cmd = prefix_cmd
         self._env = env
 
-    def cmd(self, args, input=None):
-        return self._env.cmd(self._prefix_cmd + args, input)
+    def cmd(self, args, input=None, tty=False):
+        return self._env.cmd(self._prefix_cmd + args, input, tty)
 
     @classmethod
     def make_readable(cls, prefix_cmd, readable_env):
@@ -139,12 +148,12 @@ class VerboseWrapper(object):
     def __init__(self, env):
         self._env = env
 
-    def cmd(self, args, input=None):
+    def cmd(self, args, input=None, tty=False):
         if input is not None:
             print "input:"
             pprint.pprint(input)
         pprint.pprint(args)
-        return self._env.cmd(args, input)
+        return self._env.cmd(args, input, tty)
 
     @classmethod
     def make_readable(cls, readable_env):
@@ -156,7 +165,7 @@ class NullWrapper(object):
     def __init__(self, env):
         self._env = env
 
-    def cmd(self, args, input=None):
+    def cmd(self, args, input=None, tty=False):
         return self._env.cmd(["true"])
 
     @classmethod
@@ -189,7 +198,7 @@ class WorkArea(object):
             env = PrefixCmdEnv.make_readable(
                 ["env", "GIT_DIFF_TOOL=" + tool], env)
         cmd = extcmd if extcmd is not None else "git-meld-index-run-merge-tool"
-        env.cmd([cmd, left_dir, right_dir])
+        env.cmd([cmd, left_dir, right_dir], tty=True)
 
     def _apply(self, view, dir_):
         view.apply(self._env, dir_)
