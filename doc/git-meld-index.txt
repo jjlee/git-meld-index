@@ -16,6 +16,26 @@ DESCRIPTION
 stage changes to the git index (also known as the git staging area)
 using any git difftool (such as meld).
 
+When you run the command you'll see meld (or your configured git
+difftool) pop up with:
+
+LEFT: temporary directory contining files copied from your working
+tree
+
+RIGHT: temporary directory with the contents of the index. This also
+includes files that are not yet in the index but are modified or
+untracked in the working copy -- in this case you'll see the file
+contents from HEAD.
+
+Edit the index (right hand side) until happy. Remember to save when
+needed.
+
+When you're done, close meld, and git-meld-index will update the index
+to match the contents of the temporary directory on the right hand
+side of meld that you just edited.
+
+At present changes to the left hand side (working copy) are discarded.
+
 OPTIONS
 -------
 -t <tool>::
