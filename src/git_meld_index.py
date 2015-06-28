@@ -4,10 +4,6 @@ from __future__ import absolute_import
 # last __future__ import, for setup.py to read it.
 __version__ = "unreleased_version"
 
-"""Interactively stage changes to the git index (also known as the git staging
-area) using any git difftool (such as meld).
-"""
-
 import argparse
 import functools
 import itertools
@@ -493,8 +489,15 @@ def repo_dir_cmd():
 
 
 def _main(prog, args):
-    parser = argparse.ArgumentParser(prog=prog)
+    # This is not __doc__ because it's tiresome for setup.py to parse out
+    # __version__ otherwise
+    description = """\
+Interactively stage changes to the git index (also known as the git staging
+area) using any git difftool (such as meld).
+"""
+    parser = argparse.ArgumentParser(prog=prog, description=description)
     add_basic_env_arguments(parser.add_argument)
+    # Note there's also a manpage, which is what git meld-index --help shows
     parser.add_argument("--work-dir")
     parser.add_argument("--no-cleanup", dest="cleanup",
                         default=True, action="store_false")
