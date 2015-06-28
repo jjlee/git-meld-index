@@ -182,18 +182,22 @@ class WorkArea(object):
             dir_ = suggested_dir
         return dir_
 
-    def _meld(self, left_dir, right_dir):
+    def _meld(self, left_dir, right_dir, tool, extcmd):
         # usually working tree on left, index on right
         env = PrefixCmdEnv.make_readable(in_dir(self._work_dir), self._env)
-        env.cmd(["git-meld-index-run-merge-tool", left_dir, right_dir])
+        if tool:
+            env = PrefixCmdEnv.make_readable(
+                ["env", "GIT_DIFF_TOOL=" + tool], env)
+        cmd = extcmd if extcmd is not None else "git-meld-index-run-merge-tool"
+        env.cmd([cmd, left_dir, right_dir])
 
     def _apply(self, view, dir_):
         view.apply(self._env, dir_)
 
-    def meld(self, left_view, right_view):
+    def meld(self, left_view, right_view, tool=None, extcmd=None):
         left_dir = self._write(left_view)
         right_dir = self._write(right_view)
-        self._meld(left_dir, right_dir)
+        self._meld(left_dir, right_dir, tool, extcmd)
         self._apply(left_view, left_dir)
         self._apply(right_view, right_dir)
 
@@ -500,6 +504,19 @@ area) using any git difftool (such as meld).
     add_basic_env_arguments(parser.add_argument)
     # Note there's also a manpage, which is what git meld-index --help shows
     parser.add_argument(
+        "--tool", "-t", dest="tool",
+        help=("Use the diff tool specified by <tool>. Valid values include "
+              "meld and kdiff3. Run git meld-index --tool-help for the list "
+              "of valid <tool> settings."))
+    parser.add_argument(
+        "--tool-help", default=False, action="store_true",
+        help="Print a list of diff tools that may be used with --tool.")
+    parser.add_argument(
+        "--extcmd", "-x",
+        help=("Specify a custom command for viewing and editing diffs.  "
+              "git-meld-index ignores the configured defaults and runs "
+              "$command $LEFT $RIGHT when this option is specified."))
+    parser.add_argument(
         "--work-dir",
         help="Directory to use instead of temporary directory.  "
         "This won't be removed on exit.")
@@ -520,6 +537,10 @@ area) using any git difftool (such as meld).
     else:
         cleanups = NullCleanups()
     env = get_env_from_arguments(arguments)
+    if arguments.tool_help:
+        print env.cmd(["git", "mergetool", "--tool-help"]).stdout_output
+        return 0
+
     repo_dir = trim(env.read_cmd(repo_dir_cmd()).stdout_output, suffix="\n")
     left = arguments.left
     if left is None:
@@ -536,11 +557,12 @@ area) using any git difftool (such as meld).
         if left_view is None:
             parser.error("left ".format(left))
         right_view = make_view(right)
-        work_area.meld(left_view, right_view)
+        work_area.meld(left_view, right_view, arguments.tool, arguments.extcmd)
+    return 0
 
 
 def main():
-    _main(sys.argv[0], sys.argv[1:])
+    sys.exit(_main(sys.argv[0], sys.argv[1:]))
 
 
 if __name__ == "__main__":
