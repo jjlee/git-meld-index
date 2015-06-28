@@ -1,0 +1,63 @@
+git-difftool(1)
+===============
+
+NAME
+----
+git-meld-index - Stage changes using common diff tools
+
+SYNOPSIS
+--------
+[verse]
+'git meld-index'
+
+DESCRIPTION
+-----------
+'git meld-index' is a Git command that allows you to interactively
+stage changes to the git index (also known as the git staging area)
+using any git difftool (such as meld).
+
+OPTIONS
+-------
+-t <tool>::
+--tool=<tool>::
+	Use the diff tool specified by <tool>.  Valid values include
+	emerge, kompare, meld, and vimdiff. Run `git difftool --tool-help`
+	for the list of valid <tool> settings.
++
+See linkgit:git-difftool[1] for documentation on this option.
+
+--tool-help::
+	Print a list of diff tools that may be used with `--tool`.
+
+-x <command>::
+--extcmd=<command>::
+	Specify a custom command for viewing diffs.
+	'git-meld-index' ignores the configured defaults and runs
+	`$command $LOCAL $REMOTE` when this option is specified.
+
+-g::
+--gui::
+	When 'git-difftool' is invoked with the `-g` or `--gui` option
+	the default diff tool will be read from the configured
+	`diff.guitool` variable instead of `diff.tool`.
+
+CONFIG VARIABLES
+----------------
+See linkgit:git-difftool[1] for documentation on this option.
+
+difftool.prompt and difftool.trustExitCode are not used by this
+command.
+
+SEE ALSO
+--------
+linkgit:git-difftool[1]::
+	 Show changes using common diff tools
+
+linkgit:git-diff[1]::
+	 Show changes between commits, commit and working tree, etc
+
+linkgit:git-mergetool[1]::
+	Run merge conflict resolution tools to resolve merge conflicts
+
+linkgit:git-config[1]::
+	 Get and set repository or global options
