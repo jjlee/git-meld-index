@@ -52,7 +52,7 @@ env PATH="$PATH":bin python src/git_meld_index.py
 
 ## Configuration
 
-Configuration is the same as for git difftool.  See the [git docs][git-docs]
+Configuration is the same as for [git difftool][git-difftool-docs].
 
 Quick start: run:
 
@@ -60,7 +60,7 @@ Quick start: run:
 git config --global diff.tool meld
 ```
 
-  [git-docs]: https://git-scm.com/documentation
+  [git-difftool-docs]: http://git-scm.com/docs/git-difftool
 
 
 ## Usage
