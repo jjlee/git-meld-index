@@ -53,7 +53,7 @@ setup(
     author_email='jjl@pobox.com',
     classifiers=classifiers,
     data_files=[("share/man/man1", ["doc/git-meld-index.1"])],
-    description="Like git add -p but with meld",
+    description="Like git add -p but with meld (or any difftool)",
     license="GPL",
     long_description=read_text("README.md"),
     package_dir={"": "src"},
