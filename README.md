@@ -31,7 +31,7 @@ it should work on BSDs or OS X.
 To install a specific release:
 
 ```
-pip install https://github.com/jjlee/git-meld-index/archive/<release tag here>.zip
+pip install https://github.com/jjlee/git-meld-index/archive/0.2.0.zip
 ```
 
 Or from HEAD of master branch:
