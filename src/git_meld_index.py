@@ -495,7 +495,8 @@ def _main(prog, args):
 Interactively stage changes to the git index (also known as the git staging
 area) using any git difftool (such as meld).
 """
-    parser = argparse.ArgumentParser(prog=prog, description=description)
+    parser = argparse.ArgumentParser(
+        prog=os.path.basename(prog), description=description)
     add_basic_env_arguments(parser.add_argument)
     # Note there's also a manpage, which is what git meld-index --help shows
     parser.add_argument("--work-dir")
