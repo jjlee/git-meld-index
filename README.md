@@ -40,8 +40,8 @@ Or from HEAD of master branch:
 pip install https://github.com/jjlee/git-meld-index/archive/master.zip
 ```
 
-If you want to avoid installers you can clone the repo run the script
-directly:
+If you want to avoid installers you can clone the repo and run the
+script directly:
 
 ```
 git clone https://github.com/jjlee/git-meld-index.git
