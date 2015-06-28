@@ -63,7 +63,8 @@ See linkgit:git-difftool[1] for documentation on this option.
 
 CONFIG VARIABLES
 ----------------
-See linkgit:git-difftool[1] for documentation on this option.
+See linkgit:git-difftool[1] for documentation on configuration for
+this command.
 
 difftool.prompt and difftool.trustExitCode are not used by this
 command.
