@@ -526,6 +526,11 @@ area) using any git difftool (such as meld).
               "git-meld-index ignores the configured defaults and runs "
               "$command $LEFT $RIGHT when this option is specified."))
     parser.add_argument(
+        "--gui", "-g", default=False, action="store_true",
+        help=("When git-difftool is invoked with the -g or --gui option the "
+              "default diff tool will be read from the configured "
+              "diff.guitool variable instead of diff.tool."))
+    parser.add_argument(
         "--work-dir",
         help="Directory to use instead of temporary directory.  "
         "This won't be removed on exit.")
@@ -557,6 +562,14 @@ area) using any git difftool (such as meld).
     right = arguments.right
     if right is None:
         right = "index:" + repo_dir
+    tool = arguments.tool
+    if arguments.gui:
+        try:
+            tool = trim(
+                env.cmd(["git", "config", "-z", "diff.guitool"]).stdout_output,
+                suffix="\0")
+        except CalledProcessError:
+            pass
     with cleanups:
         make_temp_dir = TempMaker(cleanups.add_cleanup).make_temp_dir
         if work_dir is None:
@@ -566,7 +579,7 @@ area) using any git difftool (such as meld).
         if left_view is None:
             parser.error("left ".format(left))
         right_view = make_view(right)
-        work_area.meld(left_view, right_view, arguments.tool, arguments.extcmd)
+        work_area.meld(left_view, right_view, tool, arguments.extcmd)
     return 0
 
 
