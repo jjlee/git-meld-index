@@ -337,7 +337,7 @@ rsync -a {new_content}/ "$right"
         self.assertEqual(sorted(left), sorted(working_tree_sources))
         self.assertEqual(sorted(right), sorted(index_destinations))
         self.assert_golden(
-            self.write_diffs(env), os.path.join(golden_dir, "test_end_to_end"))
+            self.write_diffs(env), os.path.join(golden_dir, "melded"))
 
     def test(self):
         env = self.make_env()
