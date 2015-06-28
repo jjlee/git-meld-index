@@ -38,6 +38,18 @@ git-meld-index \- Stage changes using common diff tools
 .SH "DESCRIPTION"
 .sp
 \fIgit meld\-index\fR is a Git command that allows you to interactively stage changes to the git index (also known as the git staging area) using any git difftool (such as meld)\&.
+.sp
+When you run the command you\(cqll see meld (or your configured git difftool) pop up with:
+.sp
+LEFT: temporary directory contining files copied from your working tree
+.sp
+RIGHT: temporary directory with the contents of the index\&. This also includes files that are not yet in the index but are modified or untracked in the working copy \(em in this case you\(cqll see the file contents from HEAD\&.
+.sp
+Edit the index (right hand side) until happy\&. Remember to save when needed\&.
+.sp
+When you\(cqre done, close meld, and git\-meld\-index will update the index to match the contents of the temporary directory on the right hand side of meld that you just edited\&.
+.sp
+At present changes to the left hand side (working copy) are discarded\&.
 .SH "OPTIONS"
 .PP
 \-t <tool>, \-\-tool=<tool>
@@ -81,7 +93,7 @@ diff\&.tool\&.
 .RE
 .SH "CONFIG VARIABLES"
 .sp
-See \fBgit-difftool\fR(1) for documentation on this option\&.
+See \fBgit-difftool\fR(1) for documentation on configuration for this command\&.
 .sp
 difftool\&.prompt and difftool\&.trustExitCode are not used by this command\&.
 .SH "SEE ALSO"
