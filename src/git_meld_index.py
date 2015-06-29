@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 # The following line has to be the first non-blank / non-comment line after the
 # last __future__ import, for setup.py to read it.
@@ -156,7 +159,7 @@ class VerboseWrapper(object):
 
     def cmd(self, args, input=None, tty=False):
         if input is not None:
-            print "input:"
+            print("input:")
             pprint.pprint(input)
         pprint.pprint(args)
         return self._env.cmd(args, input, tty)
@@ -558,7 +561,7 @@ area) using any git difftool (such as meld).
         cleanups = NullCleanups()
     env = get_env_from_arguments(arguments)
     if arguments.tool_help:
-        print env.cmd(["git", "mergetool", "--tool-help"]).stdout_output
+        print(env.cmd(["git", "mergetool", "--tool-help"]).stdout_output)
         return 0
 
     repo_dir = trim(env.read_cmd(repo_dir_cmd()).stdout_output, suffix="\n")
@@ -584,7 +587,7 @@ area) using any git difftool (such as meld).
         try:
             left_view = make_view(left)
             right_view = make_view(right)
-        except UnknownURISchemeError, exc:
+        except UnknownURISchemeError as exc:
             parser.error(str(exc))
         work_area.meld(left_view, right_view, tool, arguments.extcmd)
     return 0

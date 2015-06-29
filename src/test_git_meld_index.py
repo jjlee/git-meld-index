@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import errno
 import os
@@ -149,7 +152,7 @@ Try running with --meld to update golden files.
         got_text = read_file(got_path)
         try:
             expect_text = read_file(expect_path)
-        except IOError, exc:
+        except IOError as exc:
             if exc.errno != errno.ENOENT:
                 raise
             # file does not exist
