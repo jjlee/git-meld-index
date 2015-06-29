@@ -24,6 +24,11 @@ __all__ = []
 log = logging.getLogger()
 
 
+class UnknownURISchemeError(ValueError):
+
+    pass
+
+
 def trim(text, prefix="", suffix=""):
     assert len(text) >= len(prefix) + len(suffix), (text, prefix, suffix)
     assert text.startswith(prefix), (text, prefix)
@@ -114,7 +119,8 @@ class BasicEnv(object):
             else:
                 stdin = None
             process = subprocess.Popen(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=stdin)
+                args,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=stdin)
             output, stderr_output = process.communicate(input)
             retcode = process.poll()
             if retcode:
@@ -423,7 +429,7 @@ def make_view(url_or_refspec):
         # TODO: this may not make much sense on the left at the moment.
         return IndexOrHeadView(dir_path)
     else:
-        raise ValueError(
+        raise UnknownURISchemeError(
             "unknown URI scheme: {} "
             "(try running git-meld-index without arguments)".format(scheme))
 
@@ -498,7 +504,7 @@ class TempMaker(object):
 
 
 def repo_dir_cmd():
-	return ["git", "rev-parse", "--show-toplevel"]
+    return ["git", "rev-parse", "--show-toplevel"]
 
 
 def _main(prog, args):
@@ -575,10 +581,11 @@ area) using any git difftool (such as meld).
         if work_dir is None:
             work_dir = make_temp_dir()
         work_area = WorkArea(env, work_dir)
-        left_view = make_view(left)
-        if left_view is None:
-            parser.error("left ".format(left))
-        right_view = make_view(right)
+        try:
+            left_view = make_view(left)
+            right_view = make_view(right)
+        except UnknownURISchemeError, exc:
+            parser.error(str(exc))
         work_area.meld(left_view, right_view, tool, arguments.extcmd)
     return 0
 
