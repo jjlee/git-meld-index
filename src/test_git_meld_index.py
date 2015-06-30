@@ -298,7 +298,7 @@ rsync -a {new_content}/ "$right"
 
     def check(self, golden_dir, env, prefix=""):
         repo_path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+            env.read_cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
 
         self.assert_golden(
             self.write_diffs(env), os.path.join(golden_dir, "unmelded"))
