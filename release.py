@@ -1,4 +1,4 @@
-"""%prog RELEASE_DIR [action ...]
+"""%(prog)s RELEASE_DIR [action ...]
 
 Perform needed actions to release, doing the work in directory RELEASE_DIR.
 
@@ -194,7 +194,8 @@ class Releaser(object):
 
 
 def parse_args(prog, args):
-    parser = argparse.ArgumentParser(prog=prog, usage=__doc__.strip())
+    parser = argparse.ArgumentParser(
+        prog=os.path.basename(prog), description=__doc__.strip())
     release.add_basic_env_arguments(parser)
     action_tree.add_arguments(parser)
     parser.add_argument(
