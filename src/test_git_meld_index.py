@@ -353,6 +353,39 @@ rsync -a {new_content}/ "$right"
         self.check("test_dirs", env, prefix=prefix)
 
 
+class TestExecutable(TestCase):
+
+    def write_do_nothing_fake_meld(self, env):
+        meld_dir = self.make_temp_dir()
+        meld_path = os.path.join(meld_dir, "meld")
+        env.cmd(write_file_cmd(meld_path, "#!/bin/sh\ntrue\n"))
+        env.cmd(["chmod", "+x", meld_path])
+        git_meld_index_bin = os.path.abspath(
+            os.path.join(self.this_dir, "../bin"))
+        return git_meld_index.PrefixCmdEnv.make_readable(
+            add_to_path_cmd([meld_dir, git_meld_index_bin]), env)
+
+    def test_executable_bit_is_preserved(self):
+        env = self.make_env()
+        repo = Repo(env)
+        repo.add_untracked("executable", "executable\n")
+        env.cmd(["chmod", "a+x", "executable"])
+        env.cmd(["git", "add", "executable"])
+        env.cmd(["git", "commit", "-m", "message", "executable"])
+        repo_path = trim(
+            env.read_cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+        meld_env = self.write_do_nothing_fake_meld(env)
+        work_dir = self.make_temp_dir()
+
+        work_area = git_meld_index.WorkArea(meld_env, work_dir)
+        left_view = git_meld_index.make_view("working:" + repo_path)
+        right_view = git_meld_index.make_view("index:" + repo_path)
+        work_area.meld(left_view, right_view, tool="meld")
+
+        is_executable = git_meld_index.try_cmd(env, ["test", "-x", "executable"])
+        self.assertTrue(is_executable)
+
+
 def create_standard_repo(path, prefix=""):
     basic_env = git_meld_index.BasicEnv()
     basic_env.cmd(["mkdir", "-p", path])
