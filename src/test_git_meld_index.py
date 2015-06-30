@@ -272,8 +272,7 @@ rsync -a {new_content}/ "$right"
         meld_dir = self.make_temp_dir()
         meld_path = os.path.join(meld_dir, "meld")
         env.cmd(write_file_cmd(meld_path, script))
-        chmod = git_meld_index.shell_escape(["chmod", "+x", meld_path])
-        env.cmd(["sh", "-c", chmod])
+        env.cmd(["chmod", "+x", meld_path])
         def get_recorded_listings():
             l = read_file(left_listing_path).splitlines()
             r = read_file(right_listing_path).splitlines()
