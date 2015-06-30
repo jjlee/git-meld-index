@@ -73,10 +73,10 @@ class ReadableEnv(object):
 
     """An env that supports .read_cmd
 
-    If you run all commands that might have side effects using .read_cmd, then
-    --pretend (i.e. NullWrapper) will work correctly but you can still read
-    information from the env even with --pretend in effect (e.g. use cat to
-    read file contents).
+    If you run all commands that might have side effects using .cmd, and all
+    other commands using .read_cmd, then --pretend (i.e. NullWrapper) will work
+    correctly but you can still read information from the env even with
+    --pretend in effect (e.g. use cat to read file contents).
     """
 
     def __init__(self, env, read_env):
