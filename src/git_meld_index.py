@@ -160,7 +160,7 @@ class VerboseWrapper(object):
     def cmd(self, args, input=None, tty=False):
         if input is not None:
             print("input:")
-            pprint.pprint(input)
+            print(input)
         pprint.pprint(args)
         return self._env.cmd(args, input, tty)
 
