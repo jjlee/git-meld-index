@@ -40,8 +40,8 @@ Or from HEAD of master branch:
 pip install https://github.com/jjlee/git-meld-index/archive/master.zip
 ```
 
-If you want to avoid installers you can clone the repo run the script
-directly:
+If you want to avoid installers you can clone the repo and run the
+script directly:
 
 ```
 git clone https://github.com/jjlee/git-meld-index.git
@@ -52,7 +52,7 @@ env PATH="$PATH":bin python src/git_meld_index.py
 
 ## Configuration
 
-Configuration is the same as for git difftool.  See the [git docs][git-docs]
+Configuration is the same as for [git difftool][git-difftool-config-docs].
 
 Quick start: run:
 
@@ -60,7 +60,7 @@ Quick start: run:
 git config --global diff.tool meld
 ```
 
-  [git-docs]: https://git-scm.com/documentation
+  [git-difftool-config-docs]: http://git-scm.com/docs/git-difftool#_config_variables
 
 
 ## Usage
@@ -90,6 +90,13 @@ side of meld that you just edited.
 
 At present changes to the left hand side (working copy) are discarded.
 
+For more information see the manpage (note the manpage is generated
+from source files so is only committed on the release branch and its
+release tags):
+
+```
+git meld-index --help
+```
 
 ## Important Caveats
 
@@ -97,24 +104,23 @@ Patches welcome.
 
 1. This is new, beta quality code and will have bugs.
 
-For example, the following have not received any attention whatsoever:
+	For example, the following have not received any attention whatsoever:
 
-* In-progress merges and rebases
-* Symbolic links
-* Git submodules
+	* In-progress merges and rebases
+	* Git submodules
 
-File moves haven't received much attention either.  There are probably
-other cases which haven't received proper testing also.
+	File moves haven't received much attention either.  There are probably
+	other cases which haven't received proper testing also.
 
-Code loss is conceivable but unlikely since it only changes the index,
-not the working tree, and changes in the index are normally present
-also in the working tree.  You should be a bit more cautious if you
-have changes in your index that you've removed from your working tree
-(this is not a common thing to do).
+	Code loss is conceivable but unlikely since it only changes the index,
+	not the working tree, and changes in the index are normally present
+	also in the working tree.  You should be a bit more cautious if you
+	have changes in your index that you've removed from your working tree
+	(this is not a common thing to do).
 
-I expect but haven't tested that submodules are ignored, and symlinks,
-file moves, and in-progress merges and rebases are not treated
-specially, which is probably at least somewhat reasonable.
+	I expect but haven't tested that submodules are ignored, and file
+	moves, and in-progress merges and rebases are not treated
+	specially, which is probably at least somewhat reasonable.
 
 2. If this functionality gets implemented in git itself I'll likely
 stop maintaining this.  I have no involvement with development of git,
@@ -142,8 +148,10 @@ some use and has more comprehensive automated tests.
 Git submodules are ignored.  This could probably be improved
 (git-difftool does something with these).
 
-Possibly symlinks should be treated the same way as git-difftool does
-(writing a file containing the hash of the link target, I think).
+Symlinks are not treated specially at present.  They could be treated
+the same way as git-difftool does: writing a file containing the link
+target.  Then the link could be edited in meld and updated by
+git-meld-index to point to the edited link target.
 
 It would probably make sense to implement updating from arbitrary
 commits and arbitrary directories.

@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 # The following line has to be the first non-blank / non-comment line after the
 # last __future__ import, for setup.py to read it.
@@ -22,6 +25,11 @@ __all__ = []
 
 
 log = logging.getLogger()
+
+
+class UnknownURISchemeError(ValueError):
+
+    pass
 
 
 def trim(text, prefix="", suffix=""):
@@ -65,10 +73,10 @@ class ReadableEnv(object):
 
     """An env that supports .read_cmd
 
-    If you run all commands that might have side effects using .read_cmd, then
-    --pretend (i.e. NullWrapper) will work correctly but you can still read
-    information from the env even with --pretend in effect (e.g. use cat to
-    read file contents).
+    If you run all commands that might have side effects using .cmd, and all
+    other commands using .read_cmd, then --pretend (i.e. NullWrapper) will work
+    correctly but you can still read information from the env even with
+    --pretend in effect (e.g. use cat to read file contents).
     """
 
     def __init__(self, env, read_env):
@@ -114,7 +122,8 @@ class BasicEnv(object):
             else:
                 stdin = None
             process = subprocess.Popen(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=stdin)
+                args,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=stdin)
             output, stderr_output = process.communicate(input)
             retcode = process.poll()
             if retcode:
@@ -150,8 +159,8 @@ class VerboseWrapper(object):
 
     def cmd(self, args, input=None, tty=False):
         if input is not None:
-            print "input:"
-            pprint.pprint(input)
+            print("input:")
+            print(input)
         pprint.pprint(args)
         return self._env.cmd(args, input, tty)
 
@@ -209,6 +218,33 @@ class WorkArea(object):
         self._meld(left_dir, right_dir, tool, extcmd)
         self._apply(left_view, left_dir)
         self._apply(right_view, right_dir)
+
+
+class DiffRecord(object):
+
+    def __init__(self,
+                 mode_after, mode_before,
+                 hash_after, hash_before,
+                 status,
+                 path):
+        self.mode_after = mode_after
+        self.mode_before = mode_before
+        self.hash_after = hash_after
+        self.hash_before = hash_before
+        self.status = status
+        self.path = path
+
+
+def pairwise(iterable):
+    iter_ = iter(iterable)
+    return itertools.izip(iter_, iter_)
+
+
+def parse_raw_diff(diff, path):
+    mode_after, mode_before, hash_after, hash_before, status = diff.split(" ")
+    mode_after = trim(mode_after, prefix=":")
+    return DiffRecord(
+        mode_after, mode_before, hash_after, hash_before, status, path)
 
 
 def iter_diff_records(repo_env, cmd):
@@ -290,37 +326,10 @@ class StageableWorkingTreeSubsetView(object):
         pass
 
 
-class DiffRecord(object):
-
-    def __init__(self,
-                 mode_after, mode_before,
-                 hash_after, hash_before,
-                 status,
-                 path):
-        self.mode_after = mode_after
-        self.mode_before = mode_before
-        self.hash_after = hash_after
-        self.hash_before = hash_before
-        self.status = status
-        self.path = path
-
-
-def parse_raw_diff(diff, path):
-    mode_after, mode_before, hash_after, hash_before, status = diff.split(" ")
-    mode_after = trim(mode_after, prefix=":")
-    return DiffRecord(
-        mode_after, mode_before, hash_after, hash_before, status, path)
-
-
 def ensure_trailing_slash(path):
     if path.endswith("/"):
         return path
     return path + "/"
-
-
-def pairwise(iterable):
-    iter_ = iter(iterable)
-    return itertools.izip(iter_, iter_)
 
 
 def make_git_permission_string(is_link, is_executable):
@@ -358,10 +367,20 @@ class IndexOrHeadView(object):
         dest_dir_path = os.path.dirname(dest_path)
         if dest_dir_path != "":
             repo_env.cmd(["mkdir", "-p", dest_dir_path])
-        cat_file_cmd = ["git", "cat-file", "blob", hash_]
-        shell_cmd = " > ".join([
-            shell_escape(cat_file_cmd), pipes.quote(dest_path)])
-        repo_env.cmd(["sh", "-c", shell_cmd])
+        if mode == "120000":
+            # symlink
+            cat_file_cmd = ["git", "cat-file", "blob", hash_]
+            link = dest_path
+            target = repo_env.cmd(cat_file_cmd).stdout_output
+            repo_env.cmd(["ln", "-sT", target, link])
+        else:
+            # regular file
+            cat_file_cmd = ["git", "cat-file", "blob", hash_]
+            shell_cmd = " > ".join([
+                shell_escape(cat_file_cmd), pipes.quote(dest_path)])
+            repo_env.cmd(["sh", "-c", shell_cmd])
+            if mode == "100755":
+                repo_env.cmd(["chmod", "+x", dest_path])
 
     def write(self, env, dest_dir):
         repo_env = PrefixCmdEnv.make_readable(in_dir(self._repo_path), env)
@@ -405,43 +424,6 @@ class IndexOrHeadView(object):
             repo_env.cmd(
                 ["git", "update-index", "--index-info"],
                 input=index_info)
-
-
-def make_view(url_or_refspec):
-    scheme, sep, dir_path = url_or_refspec.partition(":")
-    if dir_path == "":
-        dir_path = "."
-    scheme_colon = scheme + sep
-    # Q. Why this fancy business rather than hard-coding left and right sides?
-    # A. I intend to add other views, e.g. arbitrary commit
-    if scheme_colon == "working:":
-        # TODO: at the moment there is not much point in having this on the
-        # right, because the .apply() method does not copy edited files
-        # back to the working copy (so any edits are discarded on exit).
-        return StageableWorkingTreeSubsetView(dir_path)
-    elif scheme_colon == "index:":
-        # TODO: this may not make much sense on the left at the moment.
-        return IndexOrHeadView(dir_path)
-    else:
-        raise ValueError(
-            "unknown URI scheme: {} "
-            "(try running git-meld-index without arguments)".format(scheme))
-
-
-def add_basic_env_arguments(add_argument):
-    add_argument("-v", "--verbose", action="store_true",
-                 help="Print commands")
-    add_argument("-n", "--pretend", action="store_true",
-                 help="Don't actually run commands")
-
-
-def get_env_from_arguments(arguments):
-    env = BasicEnv.make_readable()
-    if arguments.pretend:
-        env = NullWrapper.make_readable(env)
-    if arguments.verbose:
-        env = VerboseWrapper.make_readable(env)
-    return env
 
 
 class Cleanups(object):
@@ -497,8 +479,45 @@ class TempMaker(object):
         return temp_dir
 
 
+def make_view(url_or_refspec):
+    scheme, sep, dir_path = url_or_refspec.partition(":")
+    if dir_path == "":
+        dir_path = "."
+    scheme_colon = scheme + sep
+    # Q. Why this fancy business rather than hard-coding left and right sides?
+    # A. I intend to add other views, e.g. arbitrary commit
+    if scheme_colon == "working:":
+        # TODO: at the moment there is not much point in having this on the
+        # right, because the .apply() method does not copy edited files
+        # back to the working copy (so any edits are discarded on exit).
+        return StageableWorkingTreeSubsetView(dir_path)
+    elif scheme_colon == "index:":
+        # TODO: this may not make much sense on the left at the moment.
+        return IndexOrHeadView(dir_path)
+    else:
+        raise UnknownURISchemeError(
+            "unknown URI scheme: {} "
+            "(try running git-meld-index without arguments)".format(scheme))
+
+
+def add_basic_env_arguments(add_argument):
+    add_argument("-v", "--verbose", action="store_true",
+                 help="Print commands")
+    add_argument("-n", "--pretend", action="store_true",
+                 help="Don't actually run commands")
+
+
+def get_env_from_arguments(arguments):
+    env = BasicEnv.make_readable()
+    if arguments.pretend:
+        env = NullWrapper.make_readable(env)
+    if arguments.verbose:
+        env = VerboseWrapper.make_readable(env)
+    return env
+
+
 def repo_dir_cmd():
-	return ["git", "rev-parse", "--show-toplevel"]
+    return ["git", "rev-parse", "--show-toplevel"]
 
 
 def _main(prog, args):
@@ -552,7 +571,7 @@ area) using any git difftool (such as meld).
         cleanups = NullCleanups()
     env = get_env_from_arguments(arguments)
     if arguments.tool_help:
-        print env.cmd(["git", "mergetool", "--tool-help"]).stdout_output
+        print(env.cmd(["git", "mergetool", "--tool-help"]).stdout_output)
         return 0
 
     repo_dir = trim(env.read_cmd(repo_dir_cmd()).stdout_output, suffix="\n")
@@ -575,10 +594,11 @@ area) using any git difftool (such as meld).
         if work_dir is None:
             work_dir = make_temp_dir()
         work_area = WorkArea(env, work_dir)
-        left_view = make_view(left)
-        if left_view is None:
-            parser.error("left ".format(left))
-        right_view = make_view(right)
+        try:
+            left_view = make_view(left)
+            right_view = make_view(right)
+        except UnknownURISchemeError as exc:
+            parser.error(str(exc))
         work_area.meld(left_view, right_view, tool, arguments.extcmd)
     return 0
 

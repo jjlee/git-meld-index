@@ -1,14 +1,24 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import errno
 import os
 import subprocess
+import string
 import sys
 import unittest
 
 import git_meld_index
 from git_meld_index import trim
 import list_tree
+
+# maketrans moved to bytes.maketrans in Python 3
+if hasattr(string, "maketrans"):
+    maketrans = string.maketrans
+else:
+    maketrans = bytes.maketrans
 
 
 def read_file(path):
@@ -22,11 +32,29 @@ def write_file(path, data):
 
 
 def write_file_cmd(filename, data):
-    return ["bash", "-c", 'echo -n "$1" >"$2"', "inline_script", data, filename]
+    return ["sh", "-c", 'echo -n "$1" >"$2"', "inline_script", data, filename]
 
 
 def append_file_cmd(filename, data):
-    return ["bash", "-c", 'echo -n "$1" >>"$2"', "inline_script", data, filename]
+    return ["sh", "-c", 'echo -n "$1" >>"$2"', "inline_script", data, filename]
+
+
+def write_symlink_cmd(link, target):
+    # Create link with path link that points to path target
+    return ["ln", "-sfT", target, link]
+
+
+translation = maketrans(b" ()", b"_--")
+
+def write_translated_symlink_cmd(link, data):
+    bytes_ = data.encode("ascii")
+    target = bytes_.translate(translation).replace(b"\n", b"") + "_target"
+    return write_symlink_cmd(link, target.decode("ascii"))
+
+
+def write_executable_cmd(filename, data):
+    return ["sh", "-c", 'echo -n "$1" >"$2" && chmod +x "$2"', "inline_script",
+            data, filename]
 
 
 class Repo(object):
@@ -34,8 +62,12 @@ class Repo(object):
     # TODO: Don't use porcelain (init/add/commit/rm)?  Seems fairly safe /
     # appropriate (for test realism) here though.
 
-    def __init__(self, env):
+    def __init__(self, env,
+                 make_file_cmd=write_file_cmd,
+                 change_file_cmd=append_file_cmd):
         self._env = env
+        self._make_file_cmd = make_file_cmd
+        self._change_file_cmd = change_file_cmd
         self._cmd("git", "init")
 
     def _cmd(self, *args):
@@ -45,7 +77,7 @@ class Repo(object):
         if "/" in name:
             dirpath = os.path.dirname(name)
             self._env.cmd(["mkdir", "-p", dirpath])
-        self._env.cmd(write_file_cmd(name, content))
+        self._env.cmd(self._make_file_cmd(name, content))
 
     def add_new_staged(self, name, content):
         self.add_untracked(name, content)
@@ -57,11 +89,11 @@ class Repo(object):
 
     def add_new_partially_staged(self, name, content, unstaged_content):
         self.add_new_staged(name, content)
-        self._env.cmd(append_file_cmd(name, unstaged_content))
+        self._env.cmd(self._change_file_cmd(name, unstaged_content))
 
     def add_modified(self, name, initial_content, unstaged_content):
         self.add_unmodified(name, initial_content)
-        self._env.cmd(append_file_cmd(name, unstaged_content))
+        self._env.cmd(self._change_file_cmd(name, unstaged_content))
 
     def add_modified_staged(self, name, initial_content, staged_content):
         self.add_modified(name, initial_content, staged_content)
@@ -80,8 +112,7 @@ class Repo(object):
         self._cmd("git", "rm", name)
 
 
-def make_standard_repo(env, path_prefix=""):
-    repo = Repo(env)
+def do_standard_repo_changes(repo, path_prefix=""):
     repo.add_untracked(path_prefix + "untracked", "untracked\n")
     repo.add_new_staged(path_prefix + "new_staged", "new staged\n")
     repo.add_unmodified(path_prefix + "unmodified", "unmodified\n")
@@ -100,6 +131,11 @@ def make_standard_repo(env, path_prefix=""):
     repo.add_deleted_from_index_and_working_tree(
         path_prefix + "deleted_from_index_and_working_tree",
         "deleted from index and working tree\n")
+
+
+def make_standard_repo(env, path_prefix=""):
+    repo = Repo(env)
+    do_standard_repo_changes(repo, path_prefix)
     return repo
 
 
@@ -149,7 +185,7 @@ Try running with --meld to update golden files.
         got_text = read_file(got_path)
         try:
             expect_text = read_file(expect_path)
-        except IOError, exc:
+        except IOError as exc:
             if exc.errno != errno.ENOENT:
                 raise
             # file does not exist
@@ -170,6 +206,13 @@ Try running with --meld to update golden files.
         write_file(got_path, got_text)
         expect_path = os.path.join(
             self.this_dir, "golden", "assert_golden_file", expect_filename)
+        self._assert_golden_file(got_path, expect_path)
+
+    def assert_equal_golden(self, got_text, expect_text):
+        expect_path = os.path.join(self.make_temp_dir(), "expected")
+        write_file(expect_path, expect_text)
+        got_path = os.path.join(self.make_temp_dir(), "got")
+        write_file(got_path, got_text)
         self._assert_golden_file(got_path, expect_path)
 
     def make_env(self):
@@ -197,9 +240,8 @@ exec "$@"
 
 class WriteViewMixin(object):
 
-    def assert_write_golden(self, make_view_from_repo_path, golden_file_name):
-        env = self.make_env()
-        make_standard_repo(env)
+    def assert_write_golden(
+            self, env, make_view_from_repo_path, golden_file_name):
         path = trim(
             env.cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
         view = make_view_from_repo_path(path)
@@ -209,16 +251,60 @@ class WriteViewMixin(object):
         listing = listing.replace(path, '<repo>')
         self.assert_golden_file(listing, golden_file_name)
 
+    def assert_roundtrip_golden(
+            self, env, make_view_from_repo_path, golden_file_name):
+        # .write() / .apply() cycle leaves repository (and index in particular)
+        # unchanged
+        def diffs():
+            diff = env.cmd(["git", "diff"]).stdout_output
+            cached = env.cmd(["git", "diff", "--cached"]).stdout_output
+            return """\
+git diff
+{0}
+
+git diff --cached
+{1}
+""".format(diff, cached)
+        before = diffs()
+
+        path = trim(
+            env.cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+        view = make_view_from_repo_path(path)
+        out = self.make_temp_dir()
+        view.write(env, out)
+        listing = list_tree.ls_tree(out)
+        listing = listing.replace(path, '<repo>')
+        self.assert_golden_file(listing, golden_file_name)
+        view.apply(env, out)
+
+        after = diffs()
+        self.assert_equal_golden(before, after)
+
 
 class TestStageableWorkingTreeSubsetView(TestCase, WriteViewMixin):
 
-    def test_write_golden(self):
-        make_view = git_meld_index.StageableWorkingTreeSubsetView
+    make_view = git_meld_index.StageableWorkingTreeSubsetView
+
+    def test_write(self):
+        env = self.make_env()
+        make_standard_repo(env)
         self.assert_write_golden(
-            make_view, "test_write_stageable_working_tree_subset")
+            env, self.make_view, "test_write_stageable_working_tree_subset")
+
+    def test_write_symlink(self):
+        env = self.make_env()
+        repo = Repo(env,
+                    make_file_cmd=write_translated_symlink_cmd,
+                    change_file_cmd=write_translated_symlink_cmd)
+        do_standard_repo_changes(repo)
+        self.assert_write_golden(
+            env, self.make_view,
+            "test_write_stageable_working_tree_subset_symlink")
 
 
 class TestIndexOrHeadView(TestCase, WriteViewMixin):
+
+    make_view = git_meld_index.IndexOrHeadView
 
     def test_raw_diff(self):
         env = self.make_env()
@@ -229,10 +315,37 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
             [record.path for record in records],
             ['deleted', "modified", "partially_staged"])
 
-    def test_write_golden(self):
-        make_view = git_meld_index.IndexOrHeadView
+    def test_write(self):
+        env = self.make_env()
+        make_standard_repo(env)
         self.assert_write_golden(
-            make_view, "test_write_stageable_index_subset")
+            env, self.make_view, "test_write_index_or_head")
+
+    def test_write_symlink(self):
+        env = self.make_env()
+        repo = Repo(env,
+                    make_file_cmd=write_translated_symlink_cmd,
+                    change_file_cmd=write_translated_symlink_cmd)
+        do_standard_repo_changes(repo)
+        self.assert_write_golden(
+            env, self.make_view,
+            "test_write_index_or_head_symlink")
+
+    def test_roundtrip_symlink(self):
+        env = self.make_env()
+        repo = Repo(env,
+                    make_file_cmd=write_translated_symlink_cmd,
+                    change_file_cmd=write_translated_symlink_cmd)
+        do_standard_repo_changes(repo)
+        self.assert_roundtrip_golden(
+            env, self.make_view, "test_write_index_or_head_symlink")
+
+    def test_roundtrip_executable(self):
+        env = self.make_env()
+        repo = Repo(env, make_file_cmd=write_executable_cmd)
+        do_standard_repo_changes(repo)
+        self.assert_roundtrip_golden(
+            env, self.make_view, "test_write_index_or_head_executable")
 
 
 class TestEndToEnd(TestCase):
@@ -269,8 +382,7 @@ rsync -a {new_content}/ "$right"
         meld_dir = self.make_temp_dir()
         meld_path = os.path.join(meld_dir, "meld")
         env.cmd(write_file_cmd(meld_path, script))
-        chmod = git_meld_index.shell_escape(["chmod", "+x", meld_path])
-        env.cmd(["sh", "-c", chmod])
+        env.cmd(["chmod", "+x", meld_path])
         def get_recorded_listings():
             l = read_file(left_listing_path).splitlines()
             r = read_file(right_listing_path).splitlines()
@@ -296,7 +408,7 @@ rsync -a {new_content}/ "$right"
 
     def check(self, golden_dir, env, prefix=""):
         repo_path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+            env.read_cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
 
         self.assert_golden(
             self.write_diffs(env), os.path.join(golden_dir, "unmelded"))
@@ -337,7 +449,7 @@ rsync -a {new_content}/ "$right"
         self.assertEqual(sorted(left), sorted(working_tree_sources))
         self.assertEqual(sorted(right), sorted(index_destinations))
         self.assert_golden(
-            self.write_diffs(env), os.path.join(golden_dir, "test_end_to_end"))
+            self.write_diffs(env), os.path.join(golden_dir, "melded"))
 
     def test(self):
         env = self.make_env()
@@ -358,6 +470,18 @@ def create_standard_repo(path, prefix=""):
         git_meld_index.in_dir(path),
         basic_env)
     make_standard_repo(env, prefix)
+
+
+def create_standard_repo_symlinks(path):
+    basic_env = git_meld_index.BasicEnv()
+    basic_env.cmd(["mkdir", "-p", path])
+    env = git_meld_index.PrefixCmdEnv(
+        git_meld_index.in_dir(path),
+        basic_env)
+    repo = Repo(env,
+                make_file_cmd=write_translated_symlink_cmd,
+                change_file_cmd=write_translated_symlink_cmd)
+    do_standard_repo_changes(repo)
 
 
 def main(prog, args):
