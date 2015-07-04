@@ -55,7 +55,7 @@ class Releaser(object):
             versions = [release.parse_version(t) for t in tags]
             if len(versions) != 0:
                 most_recent = max(versions)
-                next_ = most_recent.next_version()
+                next_ = str(most_recent.next_version())
             return next_
 
     def _set_tag_name(self):
