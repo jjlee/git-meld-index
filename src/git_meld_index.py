@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 # The following line has to be the first non-blank / non-comment line after the
 # last __future__ import, for setup.py to read it.
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 import argparse
 import functools
