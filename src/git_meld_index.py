@@ -220,6 +220,33 @@ class WorkArea(object):
         self._apply(right_view, right_dir)
 
 
+class DiffRecord(object):
+
+    def __init__(self,
+                 mode_after, mode_before,
+                 hash_after, hash_before,
+                 status,
+                 path):
+        self.mode_after = mode_after
+        self.mode_before = mode_before
+        self.hash_after = hash_after
+        self.hash_before = hash_before
+        self.status = status
+        self.path = path
+
+
+def pairwise(iterable):
+    iter_ = iter(iterable)
+    return itertools.izip(iter_, iter_)
+
+
+def parse_raw_diff(diff, path):
+    mode_after, mode_before, hash_after, hash_before, status = diff.split(" ")
+    mode_after = trim(mode_after, prefix=":")
+    return DiffRecord(
+        mode_after, mode_before, hash_after, hash_before, status, path)
+
+
 def iter_diff_records(repo_env, cmd):
     process = repo_env.read_cmd(cmd)
     parts = process.stdout_output.split("\0")
@@ -299,37 +326,10 @@ class StageableWorkingTreeSubsetView(object):
         pass
 
 
-class DiffRecord(object):
-
-    def __init__(self,
-                 mode_after, mode_before,
-                 hash_after, hash_before,
-                 status,
-                 path):
-        self.mode_after = mode_after
-        self.mode_before = mode_before
-        self.hash_after = hash_after
-        self.hash_before = hash_before
-        self.status = status
-        self.path = path
-
-
-def parse_raw_diff(diff, path):
-    mode_after, mode_before, hash_after, hash_before, status = diff.split(" ")
-    mode_after = trim(mode_after, prefix=":")
-    return DiffRecord(
-        mode_after, mode_before, hash_after, hash_before, status, path)
-
-
 def ensure_trailing_slash(path):
     if path.endswith("/"):
         return path
     return path + "/"
-
-
-def pairwise(iterable):
-    iter_ = iter(iterable)
-    return itertools.izip(iter_, iter_)
 
 
 def make_git_permission_string(is_link, is_executable):
@@ -416,43 +416,6 @@ class IndexOrHeadView(object):
                 input=index_info)
 
 
-def make_view(url_or_refspec):
-    scheme, sep, dir_path = url_or_refspec.partition(":")
-    if dir_path == "":
-        dir_path = "."
-    scheme_colon = scheme + sep
-    # Q. Why this fancy business rather than hard-coding left and right sides?
-    # A. I intend to add other views, e.g. arbitrary commit
-    if scheme_colon == "working:":
-        # TODO: at the moment there is not much point in having this on the
-        # right, because the .apply() method does not copy edited files
-        # back to the working copy (so any edits are discarded on exit).
-        return StageableWorkingTreeSubsetView(dir_path)
-    elif scheme_colon == "index:":
-        # TODO: this may not make much sense on the left at the moment.
-        return IndexOrHeadView(dir_path)
-    else:
-        raise UnknownURISchemeError(
-            "unknown URI scheme: {} "
-            "(try running git-meld-index without arguments)".format(scheme))
-
-
-def add_basic_env_arguments(add_argument):
-    add_argument("-v", "--verbose", action="store_true",
-                 help="Print commands")
-    add_argument("-n", "--pretend", action="store_true",
-                 help="Don't actually run commands")
-
-
-def get_env_from_arguments(arguments):
-    env = BasicEnv.make_readable()
-    if arguments.pretend:
-        env = NullWrapper.make_readable(env)
-    if arguments.verbose:
-        env = VerboseWrapper.make_readable(env)
-    return env
-
-
 class Cleanups(object):
 
     def __init__(self):
@@ -504,6 +467,43 @@ class TempMaker(object):
             shutil.rmtree(temp_dir)
         self._add_cleanup(clean_up)
         return temp_dir
+
+
+def make_view(url_or_refspec):
+    scheme, sep, dir_path = url_or_refspec.partition(":")
+    if dir_path == "":
+        dir_path = "."
+    scheme_colon = scheme + sep
+    # Q. Why this fancy business rather than hard-coding left and right sides?
+    # A. I intend to add other views, e.g. arbitrary commit
+    if scheme_colon == "working:":
+        # TODO: at the moment there is not much point in having this on the
+        # right, because the .apply() method does not copy edited files
+        # back to the working copy (so any edits are discarded on exit).
+        return StageableWorkingTreeSubsetView(dir_path)
+    elif scheme_colon == "index:":
+        # TODO: this may not make much sense on the left at the moment.
+        return IndexOrHeadView(dir_path)
+    else:
+        raise UnknownURISchemeError(
+            "unknown URI scheme: {} "
+            "(try running git-meld-index without arguments)".format(scheme))
+
+
+def add_basic_env_arguments(add_argument):
+    add_argument("-v", "--verbose", action="store_true",
+                 help="Print commands")
+    add_argument("-n", "--pretend", action="store_true",
+                 help="Don't actually run commands")
+
+
+def get_env_from_arguments(arguments):
+    env = BasicEnv.make_readable()
+    if arguments.pretend:
+        env = NullWrapper.make_readable(env)
+    if arguments.verbose:
+        env = VerboseWrapper.make_readable(env)
+    return env
 
 
 def repo_dir_cmd():
