@@ -1,0 +1,4 @@
+|-- modified -> modified_-initial-_target
+|-- modified_staged -> modified_staged_-modified-_target
+|-- new_staged -> new_staged_target
+`-- partially_staged -> partially_staged_target

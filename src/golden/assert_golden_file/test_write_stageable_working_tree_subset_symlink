@@ -1,0 +1,6 @@
+|-- deleted_from_index -> deleted_from_index_target
+|-- modified -> modified_-modified-_target
+|-- modified_staged -> modified_staged_-modified-_target
+|-- new_staged -> new_staged_target
+|-- partially_staged -> more_target
+`-- untracked -> untracked_target

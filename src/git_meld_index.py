@@ -367,10 +367,18 @@ class IndexOrHeadView(object):
         dest_dir_path = os.path.dirname(dest_path)
         if dest_dir_path != "":
             repo_env.cmd(["mkdir", "-p", dest_dir_path])
-        cat_file_cmd = ["git", "cat-file", "blob", hash_]
-        shell_cmd = " > ".join([
-            shell_escape(cat_file_cmd), pipes.quote(dest_path)])
-        repo_env.cmd(["sh", "-c", shell_cmd])
+        if mode == "120000":
+            # symlink
+            cat_file_cmd = ["git", "cat-file", "blob", hash_]
+            link = dest_path
+            target = repo_env.cmd(cat_file_cmd).stdout_output
+            repo_env.cmd(["ln", "-sT", target, link])
+        else:
+            # regular file
+            cat_file_cmd = ["git", "cat-file", "blob", hash_]
+            shell_cmd = " > ".join([
+                shell_escape(cat_file_cmd), pipes.quote(dest_path)])
+            repo_env.cmd(["sh", "-c", shell_cmd])
 
     def write(self, env, dest_dir):
         repo_env = PrefixCmdEnv.make_readable(in_dir(self._repo_path), env)

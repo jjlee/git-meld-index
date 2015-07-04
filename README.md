@@ -107,7 +107,6 @@ Patches welcome.
 	For example, the following have not received any attention whatsoever:
 
 	* In-progress merges and rebases
-	* Symbolic links
 	* Git submodules
 
 	File moves haven't received much attention either.  There are probably
@@ -119,8 +118,8 @@ Patches welcome.
 	have changes in your index that you've removed from your working tree
 	(this is not a common thing to do).
 
-	I expect but haven't tested that submodules are ignored, and symlinks,
-	file moves, and in-progress merges and rebases are not treated
+	I expect but haven't tested that submodules are ignored, and file
+	moves, and in-progress merges and rebases are not treated
 	specially, which is probably at least somewhat reasonable.
 
 2. If this functionality gets implemented in git itself I'll likely
@@ -149,8 +148,10 @@ some use and has more comprehensive automated tests.
 Git submodules are ignored.  This could probably be improved
 (git-difftool does something with these).
 
-Possibly symlinks should be treated the same way as git-difftool does
-(writing a file containing the hash of the link target, I think).
+Symlinks are not treated specially at present.  They could be treated
+the same way as git-difftool does: writing a file containing the link
+target.  Then the link could be edited in meld and updated by
+git-meld-index to point to the edited link target.
 
 It would probably make sense to implement updating from arbitrary
 commits and arbitrary directories.
