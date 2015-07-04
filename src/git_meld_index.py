@@ -604,7 +604,11 @@ area) using any git difftool (such as meld).
 
 
 def main():
-    sys.exit(_main(sys.argv[0], sys.argv[1:]))
+    try:
+        status = _main(sys.argv[0], sys.argv[1:])
+    except KeyboardInterrupt:
+        status = 1
+    sys.exit(status)
 
 
 if __name__ == "__main__":

@@ -165,6 +165,12 @@ those files also.
 A. Because that would not allow using the "Copy to right" feature of
 meld (on e.g. untracked or modified files).
 
+Q. How can I abort my changes?
+
+A. Type Control-C at the command line from which you launched `git
+meld-index`.  I'm not sure how one does something similar with vimdiff
+(which is a terminal application): if you know, let me know.
+
 
 John Lee, 2015-06
 jjl@pobox.com
