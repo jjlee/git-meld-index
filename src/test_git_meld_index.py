@@ -52,6 +52,11 @@ def write_translated_symlink_cmd(link, data):
     return write_symlink_cmd(link, target.decode("ascii"))
 
 
+def write_executable_cmd(filename, data):
+    return ["sh", "-c", 'echo -n "$1" >"$2" && chmod +x "$2"', "inline_script",
+            data, filename]
+
+
 class Repo(object):
 
     # TODO: Don't use porcelain (init/add/commit/rm)?  Seems fairly safe /
@@ -334,6 +339,13 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         do_standard_repo_changes(repo)
         self.assert_roundtrip_golden(
             env, self.make_view, "test_write_index_or_head_symlink")
+
+    def test_roundtrip_executable(self):
+        env = self.make_env()
+        repo = Repo(env, make_file_cmd=write_executable_cmd)
+        do_standard_repo_changes(repo)
+        self.assert_roundtrip_golden(
+            env, self.make_view, "test_write_index_or_head_executable")
 
 
 class TestEndToEnd(TestCase):

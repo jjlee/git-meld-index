@@ -379,6 +379,8 @@ class IndexOrHeadView(object):
             shell_cmd = " > ".join([
                 shell_escape(cat_file_cmd), pipes.quote(dest_path)])
             repo_env.cmd(["sh", "-c", shell_cmd])
+            if mode == "100755":
+                repo_env.cmd(["chmod", "+x", dest_path])
 
     def write(self, env, dest_dir):
         repo_env = PrefixCmdEnv.make_readable(in_dir(self._repo_path), env)
