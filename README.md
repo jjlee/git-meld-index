@@ -90,6 +90,13 @@ side of meld that you just edited.
 
 At present changes to the left hand side (working copy) are discarded.
 
+For more information see the manpage (note the manpage is generated
+from source files so is only committed on the release branch and its
+release tags):
+
+```
+git meld-index --help
+```
 
 ## Important Caveats
 
