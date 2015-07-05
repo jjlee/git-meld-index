@@ -151,21 +151,6 @@ class Releaser(object):
         self._env.cmd(["git", "push", self._repo, "release"])
         self._env.cmd(["git", "push", self._repo, self._tag_name])
 
-    def release_to_github(self, log):
-        release = {
-            "tag_name": self._tag_name,
-            "target_commitish": self._tag_name,
-            "name": self._tag_name,
-            "body": "Release of version " + self._tag_name,
-            "draft": True,
-            "prerelease": False
-        }
-        url = ("https://api.github.com/repos/"
-               ":jjlee/:git-meld-index/releases?access_token=:" +
-               self._github_access_token)
-        data = json.dumps(release)
-        self._env.cmd(["curl", "--data", data, url])
-
     @action_tree.action_node
     def prepare(self):
         return [
@@ -189,8 +174,6 @@ class Releaser(object):
         return [
             self.prepare,
             self.push,
-            # Seems github does this by default just by creating a tag!
-            # self.release_to_github,
         ]
 
 
