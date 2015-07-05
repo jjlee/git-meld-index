@@ -183,5 +183,5 @@ meld have some advantages -- see the list at the top of this README
 for some of them.  Try it and see what works for you.
 
 
-John Lee, 2015-06
+John Lee, 2015-07
 jjl@pobox.com
