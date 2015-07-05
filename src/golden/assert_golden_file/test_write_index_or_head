@@ -1,4 +1,5 @@
 |-- modified
 |-- modified_staged
 |-- new_staged
-`-- partially_staged
+|-- partially_staged
+`-- rename_after

@@ -111,6 +111,11 @@ class Repo(object):
         self.add_unmodified(name, initial_content)
         self._cmd("git", "rm", name)
 
+    def add_moved(self, name, initial_content, new_name):
+        # Really just a remove and an add
+        self.add_unmodified(name, initial_content)
+        self._cmd("git", "mv", name, new_name)
+
 
 def do_standard_repo_changes(repo, path_prefix=""):
     repo.add_untracked(path_prefix + "untracked", "untracked\n")
@@ -131,6 +136,10 @@ def do_standard_repo_changes(repo, path_prefix=""):
     repo.add_deleted_from_index_and_working_tree(
         path_prefix + "deleted_from_index_and_working_tree",
         "deleted from index and working tree\n")
+    repo.add_moved(
+        path_prefix + "rename_before",
+        "renamed\n",
+        path_prefix + "rename_after")
 
 
 def make_standard_repo(env, path_prefix=""):
@@ -341,15 +350,8 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
 class TestEndToEnd(TestCase):
 
     # TODO: Cover these
-    # symlinks
-    # file / dir moves
-
-    # DONE: A: addition of a file
-    # TODO: C: copy of a file into a new one
-    # DONE: D: deletion of a file
-    # DONE: M: modification of the contents or mode of a file
-    # TODO: R: renaming of a file
-    # TODO: T: change in the type of the file
+    # Change file mode
+    # Change file type (regular -> symlink, regular -> executable, etc.)
     # TODO: U: file is unmerged (you must complete the merge before it can be committed)
 
     def write_fake_meld(self, env, new_content_dir):
@@ -406,12 +408,13 @@ rsync -a {new_content}/ "$right"
         # Modified or untracked files in the working tree
         working_tree_sources = ["untracked", "partially_staged", "modified",
                                 "modified_staged", "new_staged",
-                                "deleted_from_index"]
+                                "deleted_from_index", "rename_after"]
         # Everything in the index that is also modified in working tree
         # (including new or untracked) -- and therefore has something that
         # could be staged
         index_destinations = [
-            "modified", "modified_staged", "new_staged", "partially_staged"]
+            "modified", "modified_staged", "new_staged", "partially_staged",
+            "rename_after"]
 
         def add_prefix(paths):
             return [prefix + path for path in paths]

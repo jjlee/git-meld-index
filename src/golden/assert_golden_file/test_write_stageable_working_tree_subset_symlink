@@ -3,4 +3,5 @@
 |-- modified_staged -> modified_staged_-modified-_target
 |-- new_staged -> new_staged_target
 |-- partially_staged -> more_target
+|-- rename_after -> renamed_target
 `-- untracked -> untracked_target

@@ -40,6 +40,20 @@ index 0000000..972b53d
 +++ b/partially_staged
 @@ -0,0 +1 @@
 +partially_staged edited by meld
+diff --git a/rename_after b/rename_after
+new file mode 100644
+index 0000000..cad4dac
+--- /dev/null
++++ b/rename_after
+@@ -0,0 +1 @@
++rename_after edited by meld
+diff --git a/rename_before b/rename_before
+deleted file mode 100644
+index b297ab5..0000000
+--- a/rename_before
++++ /dev/null
+@@ -1 +0,0 @@
+-renamed
 diff --git a/untracked b/untracked
 new file mode 100644
 index 0000000..6665f52

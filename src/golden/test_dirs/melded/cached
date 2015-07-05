@@ -40,6 +40,20 @@ index 0000000..fbebb3d
 +++ b/sub/dir/partially_staged
 @@ -0,0 +1 @@
 +sub/dir/partially_staged edited by meld
+diff --git a/sub/dir/rename_after b/sub/dir/rename_after
+new file mode 100644
+index 0000000..0738ee8
+--- /dev/null
++++ b/sub/dir/rename_after
+@@ -0,0 +1 @@
++sub/dir/rename_after edited by meld
+diff --git a/sub/dir/rename_before b/sub/dir/rename_before
+deleted file mode 100644
+index b297ab5..0000000
+--- a/sub/dir/rename_before
++++ /dev/null
+@@ -1 +0,0 @@
+-renamed
 diff --git a/sub/dir/untracked b/sub/dir/untracked
 new file mode 100644
 index 0000000..76197a2

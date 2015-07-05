@@ -43,6 +43,13 @@ index fbebb3d..c5a3e2e 100644
 -sub/dir/partially_staged edited by meld
 +partially staged
 +more
+diff --git a/sub/dir/rename_after b/sub/dir/rename_after
+index 0738ee8..b297ab5 100644
+--- a/sub/dir/rename_after
++++ b/sub/dir/rename_after
+@@ -1 +1 @@
+-sub/dir/rename_after edited by meld
++renamed
 diff --git a/sub/dir/untracked b/sub/dir/untracked
 index 76197a2..5a72eb2 100644
 --- a/sub/dir/untracked

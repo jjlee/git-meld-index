@@ -112,8 +112,8 @@ Patches welcome.
 	* In-progress merges and rebases
 	* Git submodules
 
-	File moves haven't received much attention either.  There are probably
-	other cases which haven't received proper testing also.
+	There are probably other cases which haven't received proper
+	testing also.
 
 	Code loss is conceivable but unlikely since it only changes the index,
 	not the working tree, and changes in the index are normally present
