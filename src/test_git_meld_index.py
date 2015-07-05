@@ -59,8 +59,8 @@ def write_executable_cmd(filename, data):
 
 class Repo(object):
 
-    # TODO: Don't use porcelain (init/add/commit/rm)?  Seems fairly safe /
-    # appropriate (for test realism) here though.
+    # One is not supposed to use porcelain in scripts (init/add/commit/rm).
+    # However, it seems fairly safe / appropriate (for test realism) here.
 
     def __init__(self, env,
                  make_file_cmd=write_file_cmd,
@@ -474,9 +474,7 @@ rsync -a {new_content}/ "$right"
 
     def write_diffs(self, env):
         diff_output = self.make_temp_dir()
-        # TODO: porcelain
         env.cmd(["sh", "-c", "git diff > {}/diff".format(diff_output)])
-        # TODO: porcelain
         env.cmd(
             ["sh", "-c", "git diff --cached > {}/cached".format(diff_output)])
         env.cmd(
