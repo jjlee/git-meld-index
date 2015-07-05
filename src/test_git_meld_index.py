@@ -365,16 +365,19 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         self.assert_roundtrip_golden(
             env, self.make_view, "test_write_index_or_head_executable")
 
-    def test_roundtrip_in_progress_merge(self):
-        env = self.make_env()
-        repo = Repo(env, make_file_cmd=write_executable_cmd)
+    def _create_conflict(self, env, repo):
         repo.add_unmodified("file", "content\n")
         env.cmd(["git", "checkout", "-b", "feature"])
         env.cmd(append_file_cmd("file", "feature branch work\n"))
         env.cmd(["git", "commit", "-m", "Made changes", "file"])
         env.cmd(["git", "checkout", "master"])
-        # cause a conflict
         env.cmd(append_file_cmd("file", "conflicting work\n"))
+        env.cmd(["git", "commit", "-m", "Conflicting changes", "file"])
+
+    def test_roundtrip_in_progress_merge(self):
+        env = self.make_env()
+        repo = Repo(env, make_file_cmd=write_executable_cmd)
+        self._create_conflict(env, repo)
         try:
             env.cmd(["git", "merge", "feature"])
         except git_meld_index.CalledProcessError:
@@ -382,22 +385,35 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         else:
             assert False, "merge should fail because of conflict"
         def is_merge_in_progress():
-            try:
-                env.cmd(["test", "-f", ".git/MERGE_BASE"])
-            except git_meld_index.CalledProcessError:
-                return False
-            else:
-                return True
+            return git_meld_index.try_cmd(
+                env, ["test", "-f", ".git/MERGE_BASE"])
         self.assert_roundtrip_golden(
             env, self.make_view, "test_write_index_or_head_in_progress_merge",
             extra_invariant_funcs=(is_merge_in_progress, ))
+
+    def test_roundtrip_in_progress_rebase(self):
+        env = self.make_env()
+        repo = Repo(env, make_file_cmd=write_executable_cmd)
+        self._create_conflict(env, repo)
+        env.cmd(["git", "checkout", "feature"])
+        try:
+            env.cmd(["git", "rebase", "master"])
+        except git_meld_index.CalledProcessError:
+            pass
+        else:
+            assert False, "rebase should fail because of conflict"
+        def is_rebase_in_progress():
+            return git_meld_index.try_cmd(
+                env, ["test", "-d", ".git/rebase-apply"])
+        self.assert_roundtrip_golden(
+            env, self.make_view, "test_write_index_or_head_in_progress_rebase",
+            extra_invariant_funcs=(is_rebase_in_progress, ))
 
 
 class TestEndToEnd(TestCase):
 
     # TODO: Cover these
     # Change file mode
-    # TODO: U: file is unmerged (you must complete the merge before it can be committed)
 
     def write_fake_meld(self, env, new_content_dir):
         left_listing_path = os.path.join(self.make_temp_dir(), "left")
