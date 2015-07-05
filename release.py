@@ -130,7 +130,8 @@ class Releaser(object):
             self._env.cmd(["git", "commit", "-m", "Built manpage",
                            "doc/git-meld-index.1"])
         else:
-            # Manpage unchanged, nothing to commit
+            # Manpage unchanged, nothing to commit (seems this never happens
+            # because of date stamp in generated manpage...)
             pass
 
     def tag(self, log):
