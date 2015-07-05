@@ -321,16 +321,6 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         self.assert_write_golden(
             env, self.make_view, "test_write_index_or_head")
 
-    def test_write_symlink(self):
-        env = self.make_env()
-        repo = Repo(env,
-                    make_file_cmd=write_translated_symlink_cmd,
-                    change_file_cmd=write_translated_symlink_cmd)
-        do_standard_repo_changes(repo)
-        self.assert_write_golden(
-            env, self.make_view,
-            "test_write_index_or_head_symlink")
-
     def test_roundtrip_symlink(self):
         env = self.make_env()
         repo = Repo(env,
