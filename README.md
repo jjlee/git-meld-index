@@ -8,7 +8,8 @@ stage changes to the git index (also known as the git staging area).
 
 This is similar to the functionality of `git add -p`, and `git add
 --interactive`.  In some cases meld is easier / quicker to use than
-`git add -p`.  That's because meld allows you, for example, to:
+`git add -p` or the staging feature in tools like `git gui`.  That's
+because meld allows you, for example, to:
 
 * see more context
 * see intra-line diffs
@@ -174,7 +175,7 @@ A. Type Control-C at the command line from which you launched `git
 meld-index`.  I'm not sure how one does something similar with vimdiff
 (which is a terminal application): if you know, let me know.
 
-Q. Why not just use <favourite staging tool>?
+Q. Why not just use &lt;favourite staging tool&gt;?
 
 A. Different tools have different pros and cons.  You should use what
 works best for you for a given task!  However, I do find tools like
