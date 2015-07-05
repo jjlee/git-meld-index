@@ -1,3 +1,18 @@
+diff --git a/sub/dir/changed_type b/sub/dir/changed_type
+deleted file mode 100644
+index e528e08..0000000
+--- a/sub/dir/changed_type
++++ /dev/null
+@@ -1 +0,0 @@
+-changed_type
+diff --git a/sub/dir/changed_type b/sub/dir/changed_type
+new file mode 120000
+index 0000000..37b19fd
+--- /dev/null
++++ b/sub/dir/changed_type
+@@ -0,0 +1 @@
++nonexistent_target
+\ No newline at end of file
 diff --git a/sub/dir/deleted b/sub/dir/deleted
 deleted file mode 100644
 index 71779d2..0000000

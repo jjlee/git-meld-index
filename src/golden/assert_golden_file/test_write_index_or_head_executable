@@ -1,3 +1,5 @@
+|-- changed_type
+|-- changed_type_staged -> nonexistent_target
 |-- modified
 |-- modified_staged
 |-- new_staged

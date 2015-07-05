@@ -116,6 +116,14 @@ class Repo(object):
         self.add_unmodified(name, initial_content)
         self._cmd("git", "mv", name, new_name)
 
+    def add_changed_type(self, name, initial_content):
+        self.add_unmodified(name, initial_content)
+        self._cmd("ln", "-sfT", "nonexistent_target", name)
+
+    def add_changed_type_staged(self, name, initial_content):
+        self.add_changed_type(name, initial_content)
+        self._cmd("git", "add", name)
+
 
 def do_standard_repo_changes(repo, path_prefix=""):
     repo.add_untracked(path_prefix + "untracked", "untracked\n")
@@ -140,6 +148,9 @@ def do_standard_repo_changes(repo, path_prefix=""):
         path_prefix + "rename_before",
         "renamed\n",
         path_prefix + "rename_after")
+    repo.add_changed_type(path_prefix + "changed_type", "changed_type\n")
+    repo.add_changed_type_staged(path_prefix + "changed_type_staged",
+                                 "changed_type\n")
 
 
 def make_standard_repo(env, path_prefix=""):
@@ -322,7 +333,7 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
             env, ["git", "diff-files", "-z"])
         self.assertEqual(
             [record.path for record in records],
-            ['deleted', "modified", "partially_staged"])
+            ["changed_type", "deleted", "modified", "partially_staged"])
 
     def test_write(self):
         env = self.make_env()
@@ -351,7 +362,6 @@ class TestEndToEnd(TestCase):
 
     # TODO: Cover these
     # Change file mode
-    # Change file type (regular -> symlink, regular -> executable, etc.)
     # TODO: U: file is unmerged (you must complete the merge before it can be committed)
 
     def write_fake_meld(self, env, new_content_dir):
@@ -413,8 +423,8 @@ rsync -a {new_content}/ "$right"
         # (including new or untracked) -- and therefore has something that
         # could be staged
         index_destinations = [
-            "modified", "modified_staged", "new_staged", "partially_staged",
-            "rename_after"]
+            "changed_type", "modified", "modified_staged", "new_staged",
+            "partially_staged", "rename_after"]
 
         def add_prefix(paths):
             return [prefix + path for path in paths]
