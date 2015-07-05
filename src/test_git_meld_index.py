@@ -378,7 +378,7 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
 
     def test_roundtrip_in_progress_merge(self):
         env = self.make_env()
-        repo = Repo(env, make_file_cmd=write_executable_cmd)
+        repo = Repo(env)
         self._create_conflict(env, repo)
         try:
             env.cmd(["git", "merge", "feature"])
@@ -395,7 +395,7 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
 
     def test_roundtrip_in_progress_rebase(self):
         env = self.make_env()
-        repo = Repo(env, make_file_cmd=write_executable_cmd)
+        repo = Repo(env)
         self._create_conflict(env, repo)
         env.cmd(["git", "checkout", "feature"])
         try:
