@@ -110,7 +110,7 @@ Patches welcome.
 
 	For example, the following have not received any attention whatsoever:
 
-	* In-progress merges and rebases
+	* In-progress rebases
 	* Git submodules
 
 	There are probably other cases which haven't received proper

@@ -272,20 +272,28 @@ class WriteViewMixin(object):
         self.assert_golden_file(listing, golden_file_name)
 
     def assert_roundtrip_golden(
-            self, env, make_view_from_repo_path, golden_file_name):
+            self, env, make_view_from_repo_path, golden_file_name,
+            extra_invariant_funcs=()
+    ):
         # .write() / .apply() cycle leaves repository (and index in particular)
         # unchanged
-        def diffs():
+        def invariant():
             diff = env.cmd(["git", "diff"]).stdout_output
             cached = env.cmd(["git", "diff", "--cached"]).stdout_output
-            return """\
+            diffs = """\
 git diff
 {0}
 
 git diff --cached
 {1}
 """.format(diff, cached)
-        before = diffs()
+            if extra_invariant_funcs:
+                extra = "\n".join(str(func()) for func in extra_invariant_funcs)
+                return "\n".join([diffs, extra, ""])
+            else:
+                return diffs
+
+        before = invariant()
 
         path = trim(
             env.cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
@@ -297,7 +305,7 @@ git diff --cached
         self.assert_golden_file(listing, golden_file_name)
         view.apply(env, out)
 
-        after = diffs()
+        after = invariant()
         self.assert_equal_golden(before, after)
 
 
@@ -356,6 +364,33 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         do_standard_repo_changes(repo)
         self.assert_roundtrip_golden(
             env, self.make_view, "test_write_index_or_head_executable")
+
+    def test_roundtrip_in_progress_merge(self):
+        env = self.make_env()
+        repo = Repo(env, make_file_cmd=write_executable_cmd)
+        repo.add_unmodified("file", "content\n")
+        env.cmd(["git", "checkout", "-b", "feature"])
+        env.cmd(append_file_cmd("file", "feature branch work\n"))
+        env.cmd(["git", "commit", "-m", "Made changes", "file"])
+        env.cmd(["git", "checkout", "master"])
+        # cause a conflict
+        env.cmd(append_file_cmd("file", "conflicting work\n"))
+        try:
+            env.cmd(["git", "merge", "feature"])
+        except git_meld_index.CalledProcessError:
+            pass
+        else:
+            assert False, "merge should fail because of conflict"
+        def is_merge_in_progress():
+            try:
+                env.cmd(["test", "-f", ".git/MERGE_BASE"])
+            except git_meld_index.CalledProcessError:
+                return False
+            else:
+                return True
+        self.assert_roundtrip_golden(
+            env, self.make_view, "test_write_index_or_head_in_progress_merge",
+            extra_invariant_funcs=(is_merge_in_progress, ))
 
 
 class TestEndToEnd(TestCase):
