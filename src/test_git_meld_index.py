@@ -272,7 +272,8 @@ class WriteViewMixin(object):
         self.assert_golden_file(listing, golden_file_name)
 
     def assert_roundtrip_golden(
-            self, env, make_view_from_repo_path, golden_file_name,
+            self, env, make_view_from_repo_path,
+            golden_file_name=None,
             extra_invariant_funcs=()
     ):
         # .write() / .apply() cycle leaves repository (and index in particular)
@@ -302,7 +303,8 @@ git diff --cached
         view.write(env, out)
         listing = list_tree.ls_tree(out)
         listing = listing.replace(path, '<repo>')
-        self.assert_golden_file(listing, golden_file_name)
+        if golden_file_name is not None:
+            self.assert_golden_file(listing, golden_file_name)
         view.apply(env, out)
 
         after = invariant()
@@ -426,6 +428,12 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
             env, self.make_view,
             "test_write_index_or_head_in_progress_submodule",
             extra_invariant_funcs=(submodule_status, ))
+
+    # I can't be bothered to fix this case at the moment
+    # def test_roundtrip_empty_repo(self):
+    #     env = self.make_env()
+    #     Repo(env)
+    #     self.assert_roundtrip_golden(env, self.make_view)
 
 
 class TestEndToEnd(TestCase):
