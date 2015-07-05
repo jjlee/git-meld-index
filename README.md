@@ -120,7 +120,7 @@ but I'd guess it's not unlikely somebody might add a 'git addtool'.
 3. Command line usage and behaviour are subject to change.
 
 
-## Less Important Caveats
+## Plans
 
 Again, patches welcome.
 
