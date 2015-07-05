@@ -20,8 +20,8 @@ because meld allows you, for example, to:
 ## Requirements
 
 I'm using git 1.9.1 and meld 1.8.4.  I expect later versions will
-work.  It works with Python 2.7 (likely 2.6 also).  Python 3 probably
-doesn't work yet.
+work.  It works with Python 2.7 (likely 2.6 also).  Python 3 doesn't
+work yet.
 
 There is no support for MS Windows.  I have only tested on Linux but
 it should work on BSDs or OS X.
