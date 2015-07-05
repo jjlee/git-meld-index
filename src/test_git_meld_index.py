@@ -409,6 +409,24 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
             env, self.make_view, "test_write_index_or_head_in_progress_rebase",
             extra_invariant_funcs=(is_rebase_in_progress, ))
 
+    def test_roundtrip_submodule(self):
+        env = self.make_env()
+        submodule_repo_env = self.make_env()
+        repo = Repo(env)
+        repo.add_unmodified("file", "content\n")
+        submodule_repo = Repo(submodule_repo_env)
+        submodule_repo.add_unmodified("file", "content\n")
+        submodule_path = trim(
+            submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output,
+            suffix="\n")
+        env.cmd(["git", "submodule", "add", submodule_path, "sub"])
+        def submodule_status():
+            return env.cmd(["git", "submodule", "status"]).stdout_output
+        self.assert_roundtrip_golden(
+            env, self.make_view,
+            "test_write_index_or_head_in_progress_submodule",
+            extra_invariant_funcs=(submodule_status, ))
+
 
 class TestEndToEnd(TestCase):
 
