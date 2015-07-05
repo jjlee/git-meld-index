@@ -28,17 +28,20 @@ it should work on BSDs or OS X.
 
 ## Install
 
+To install from the latest release
+
+```
+pip install https://github.com/jjlee/git-meld-index/archive/release.zip
+```
+
 To install a specific release:
 
 ```
 pip install https://github.com/jjlee/git-meld-index/archive/<release tag here>.zip
 ```
 
-Or from HEAD of master branch:
-
-```
-pip install https://github.com/jjlee/git-meld-index/archive/master.zip
-```
+Currently you can't install this way from the master branch because
+the manpage isn't committed there.
 
 If you want to avoid installers you can clone the repo and run the
 script directly:
