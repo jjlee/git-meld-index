@@ -438,9 +438,6 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
 
 class TestEndToEnd(TestCase):
 
-    # TODO: Cover these
-    # Change file mode
-
     def write_fake_meld(self, env, new_content_dir):
         left_listing_path = os.path.join(self.make_temp_dir(), "left")
         right_listing_path = os.path.join(self.make_temp_dir(), "right")
