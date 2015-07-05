@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 __version__ = "unreleased_version"
 
 import argparse
+import atexit
 import functools
 import itertools
 import logging
@@ -432,16 +433,27 @@ class Cleanups(object):
         self._cleanups = []
 
     def add_cleanup(self, func):
+        """Add a cleanup function.
+
+        It is possible for the function to be called more than once on
+        .clean_up(), though that shouldn't normally happen.
+        """
         self._cleanups.append(func)
 
     def clean_up(self):
+        """Call cleanup functions.
+
+        It is OK to call this more than once.
+        """
         failed = False
-        for func in reversed(self._cleanups):
+        while self._cleanups:
+            func = self._cleanups[-1]
             try:
                 func()
             except:
                 log.exception("Exception cleaning up: {}".format(func))
                 failed = True
+            self._cleanups.pop()
         if failed:
             raise
 
@@ -569,6 +581,7 @@ area) using any git difftool (such as meld).
         cleanups = Cleanups()
     else:
         cleanups = NullCleanups()
+    atexit.register(cleanups.clean_up)
     env = get_env_from_arguments(arguments)
     if arguments.tool_help:
         print(env.cmd(["git", "mergetool", "--tool-help"]).stdout_output)
