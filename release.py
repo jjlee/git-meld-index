@@ -72,6 +72,9 @@ class Releaser(object):
         self._base_env.cmd(["mkdir", "-p", self._clone_path])
         self._env.cmd(["git", "clone", self._repo, self._clone_path])
 
+    def checkout_master(self, log):
+        self._env.cmd(["git", "checkout", "-B", "master", "origin/master"])
+
     def guess_next_tag(self, log):
         # Obviously if you've already tagged in this repo you don't want this
         self._set_tag_name()
@@ -156,8 +159,11 @@ class Releaser(object):
         return [
             self.destroy,
             self.clone,
+            self.checkout_master,
             self.guess_next_tag,
             self.print_tag,
+            self.build_manpage,
+            self.commit_manpage,
             self.merge_to_release,
             self.update_version_in_readme,
             self.build_manpage,
