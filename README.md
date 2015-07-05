@@ -104,8 +104,6 @@ git meld-index --help
 
 ## Important Caveats
 
-Patches welcome.
-
 1. This is new, beta quality code and will have bugs.  Code loss is
 conceivable but unlikely since it only changes the index, not the
 working tree, and changes in the index are normally present also in
@@ -122,7 +120,7 @@ but I'd guess it's not unlikely somebody might add a 'git addtool'.
 
 ## Plans
 
-Again, patches welcome.
+Patches welcome.
 
 It would make sense to add support for the equivalent of `git reset
 -p`.  One way to do this would be a 3-way diff with from left to
