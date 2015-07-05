@@ -127,8 +127,8 @@ class Releaser(object):
         try:
             self._env.cmd(["git", "diff", "--exit-code"])
         except cmd_env.CommandFailedError:
-            self._env.cmd(["git", "add", "doc/git-meld-index.1"])
-            self._env.cmd(["git", "commit", "-m", "Built manpage"])
+            self._env.cmd(["git", "commit", "-m", "Built manpage",
+                           "doc/git-meld-index.1"])
         else:
             # Manpage unchanged, nothing to commit
             pass
