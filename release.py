@@ -10,7 +10,6 @@ If no actions are given, print the tree of actions and do nothing.
 # It requires asciidoc and xmlto to build the manpage.
 
 import argparse
-import json
 import os
 import sys
 
