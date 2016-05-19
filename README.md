@@ -1,7 +1,5 @@
 # git-meld-index
 
-This is new code, please exercise caution (See Important Caveats below).
-
 git-meld-index runs [meld](http://meldmerge.org/) -- or any other git
 difftool (kdiff3, diffuse, etc.) -- to allow you to interactively
 stage changes to the git index (also known as the git staging area).
@@ -104,12 +102,9 @@ git meld-index --help
 
 ## Important Caveats
 
-1. This is new, beta quality code and will have bugs.  Code loss is
-conceivable but unlikely since it only changes the index, not the
-working tree, and changes in the index are normally present also in
-the working tree.  You should be a bit more cautious if you have
-changes in your index that you've removed from your working tree (this
-is not a common thing to do).
+1. Be a bit cautious if you have changes in your index that you've
+removed from your working tree (this is not a common thing to do and I
+don't personally do this much).
 
 2. If this functionality gets implemented in git itself I'll likely
 stop maintaining this.  I have no involvement with development of git,
@@ -131,8 +126,7 @@ be best to have both options available.
 It would make sense to be able to update the view of the working copy
 also (by copying back edited files from the temporary directory into
 the working copy).  This is a bit riskier (bugs could more easily
-cause code loss) so I don't want to implement it until it has seen
-some use and has more comprehensive automated tests.
+cause code loss) so would need more comprehensive automated tests.
 
 Git submodules are ignored.  This could probably be improved
 (git-difftool does something with these).
