@@ -151,8 +151,7 @@ meld (on e.g. untracked or modified files).
 Q. How can I abort my changes?
 
 A. Type Control-C at the command line from which you launched `git
-meld-index`.  I'm not sure how one does something similar with vimdiff
-(which is a terminal application): if you know, let me know.
+meld-index`. For `vimdiff` you can type `:cq` to quit with abort.
 
 Q. Why not just use &lt;favourite staging tool&gt;?
 
