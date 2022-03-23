@@ -1,8 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 # The following line has to be the first non-blank / non-comment line after the
 # last __future__ import, for setup.py to read it.
 __version__ = "unreleased_version"
@@ -180,7 +175,7 @@ class NullWrapper(object):
 
     @classmethod
     def make_readable(cls, readable_env):
-        return readable_env.wrap(cls)
+        return ReadableEnv(env=NullWrapper(readable_env), read_env=readable_env)
 
 
 def shell_escape(args):
@@ -238,7 +233,7 @@ class DiffRecord(object):
 
 def pairwise(iterable):
     iter_ = iter(iterable)
-    return itertools.izip(iter_, iter_)
+    return zip(iter_, iter_)
 
 
 def parse_raw_diff(diff, path):
@@ -250,7 +245,7 @@ def parse_raw_diff(diff, path):
 
 def iter_diff_records(repo_env, cmd):
     process = repo_env.read_cmd(cmd)
-    parts = process.stdout_output.split("\0")
+    parts = [part.decode() for part in process.stdout_output.split(b"\0")]
     assert parts[-1] == ""
     for diff, path in pairwise(parts[:-1]):
         yield parse_raw_diff(diff, path)
@@ -302,7 +297,7 @@ class StageableWorkingTreeSubsetView(object):
     def _untracked(self, env):
         process = env.read_cmd(
             ["git", "ls-files", "-z", "--others", "--exclude-standard"])
-        return process.stdout_output.split("\0")[:-1]
+        return [f.decode() for f in process.stdout_output.split(b"\0")[:-1]]
 
     def _modified(self, env):
         for diff in iter_diff_records_undeleted(
@@ -363,7 +358,7 @@ class IndexOrHeadView(object):
     def check_out_head(self, repo_env, path, dest_path):
         # check out HEAD to dest_path
         ls_tree = repo_env.read_cmd(["git", "ls-tree", "HEAD", path])
-        mode, type_, hash_path = ls_tree.stdout_output.split(" ")
+        mode, type_, hash_path = ls_tree.stdout_output.decode().split(" ")
         hash_, _ = hash_path.split("\t")
         dest_dir_path = os.path.dirname(dest_path)
         if dest_dir_path != "":
@@ -372,7 +367,7 @@ class IndexOrHeadView(object):
             # symlink
             cat_file_cmd = ["git", "cat-file", "blob", hash_]
             link = dest_path
-            target = repo_env.cmd(cat_file_cmd).stdout_output
+            target = repo_env.cmd(cat_file_cmd).stdout_output.decode()
             repo_env.cmd(["ln", "-sT", target, link])
         else:
             # regular file
@@ -410,7 +405,7 @@ class IndexOrHeadView(object):
         repo_env = PrefixCmdEnv.make_readable(in_dir(abs_repo_path), env)
         src_env = PrefixCmdEnv.make_readable(in_dir(dir_), env)
         find = src_env.read_cmd(["find", ".", "-type", "f", "-print0"])
-        paths = find.stdout_output.split("\0")
+        paths = [p.decode() for p in find.stdout_output.split(b"\0")]
         assert paths[-1] == "", paths
         for path in paths[:-1]:
             if path.startswith("./"):
@@ -420,11 +415,11 @@ class IndexOrHeadView(object):
             is_executable = try_cmd(src_env, ["test", "-x", path])
             permission = make_git_permission_string(is_link, is_executable)
             hash_object = repo_env.cmd(["git", "hash-object", "-w", src_path])
-            hash_ = trim(hash_object.stdout_output, suffix="\n")
+            hash_ = trim(hash_object.stdout_output.decode(), suffix="\n")
             index_info = "{} {}\t{}".format(permission, hash_, path)
             repo_env.cmd(
                 ["git", "update-index", "--index-info"],
-                input=index_info)
+                input=index_info.encode())
 
 
 class Cleanups(object):
@@ -558,9 +553,8 @@ area) using any git difftool (such as meld).
               "$command $LEFT $RIGHT when this option is specified."))
     parser.add_argument(
         "--gui", "-g", default=False, action="store_true",
-        help=("When git-difftool is invoked with the -g or --gui option the "
-              "default diff tool will be read from the configured "
-              "diff.guitool variable instead of diff.tool."))
+        help=("Read the default diff tool from the configured diff.guitool "
+              "variable instead of diff.tool."))
     parser.add_argument(
         "--work-dir",
         help="Directory to use instead of temporary directory.  "
@@ -584,10 +578,10 @@ area) using any git difftool (such as meld).
     atexit.register(cleanups.clean_up)
     env = get_env_from_arguments(arguments)
     if arguments.tool_help:
-        print(env.cmd(["git", "mergetool", "--tool-help"]).stdout_output)
+        print(env.cmd(["git", "mergetool", "--tool-help"]).stdout_output.decode())
         return 0
 
-    repo_dir = trim(env.read_cmd(repo_dir_cmd()).stdout_output, suffix="\n")
+    repo_dir = trim(env.read_cmd(repo_dir_cmd()).stdout_output.decode(), suffix="\n")
     left = arguments.left
     if left is None:
         left = "working:" + repo_dir
@@ -599,7 +593,7 @@ area) using any git difftool (such as meld).
         try:
             tool = trim(
                 env.cmd(["git", "config", "-z", "diff.guitool"]).stdout_output,
-                suffix="\0")
+                suffix=b"\0").decode()
         except CalledProcessError:
             pass
     with cleanups:

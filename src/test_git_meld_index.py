@@ -1,8 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import errno
 import os
 import subprocess
@@ -48,7 +43,7 @@ translation = maketrans(b" ()", b"_--")
 
 def write_translated_symlink_cmd(link, data):
     bytes_ = data.encode("ascii")
-    target = bytes_.translate(translation).replace(b"\n", b"") + "_target"
+    target = bytes_.translate(translation).replace(b"\n", b"") + b"_target"
     return write_symlink_cmd(link, target.decode("ascii"))
 
 
@@ -263,7 +258,7 @@ class WriteViewMixin(object):
     def assert_write_golden(
             self, env, make_view_from_repo_path, golden_file_name):
         path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+            env.cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
         view = make_view_from_repo_path(path)
         out = self.make_temp_dir()
         view.write(env, out)
@@ -279,8 +274,8 @@ class WriteViewMixin(object):
         # .write() / .apply() cycle leaves repository (and index in particular)
         # unchanged
         def invariant():
-            diff = env.cmd(["git", "diff"]).stdout_output
-            cached = env.cmd(["git", "diff", "--cached"]).stdout_output
+            diff = env.cmd(["git", "diff"]).stdout_output.decode()
+            cached = env.cmd(["git", "diff", "--cached"]).stdout_output.decode()
             diffs = """\
 git diff
 {0}
@@ -297,7 +292,7 @@ git diff --cached
         before = invariant()
 
         path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+            env.cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
         view = make_view_from_repo_path(path)
         out = self.make_temp_dir()
         view.write(env, out)
@@ -419,11 +414,11 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         submodule_repo = Repo(submodule_repo_env)
         submodule_repo.add_unmodified("file", "content\n")
         submodule_path = trim(
-            submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output,
+            submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output.decode(),
             suffix="\n")
         env.cmd(["git", "submodule", "add", submodule_path, "sub"])
         def submodule_status():
-            return env.cmd(["git", "submodule", "status"]).stdout_output
+            return env.cmd(["git", "submodule", "status"]).stdout_output.decode()
         self.assert_roundtrip_golden(
             env, self.make_view,
             "test_write_index_or_head_in_progress_submodule",
@@ -482,7 +477,7 @@ rsync -a {new_content}/ "$right"
 
     def check(self, golden_dir, env, prefix=""):
         repo_path = trim(
-            env.read_cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+            env.read_cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
 
         self.assert_golden(
             self.write_diffs(env), os.path.join(golden_dir, "unmelded"))
