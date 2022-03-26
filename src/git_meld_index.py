@@ -2,6 +2,7 @@
 # last __future__ import, for setup.py to read it.
 __version__ = "unreleased_version"
 
+from dataclasses import dataclass
 import argparse
 import atexit
 import functools
@@ -216,19 +217,14 @@ class WorkArea(object):
         self._apply(right_view, right_dir)
 
 
-class DiffRecord(object):
-
-    def __init__(self,
-                 mode_after, mode_before,
-                 hash_after, hash_before,
-                 status,
-                 path):
-        self.mode_after = mode_after
-        self.mode_before = mode_before
-        self.hash_after = hash_after
-        self.hash_before = hash_before
-        self.status = status
-        self.path = path
+@dataclass
+class DiffRecord:
+    mode_after: str
+    mode_before: str
+    hash_after: str
+    hash_before: str
+    status: str
+    path: str
 
 
 def pairwise(iterable):
