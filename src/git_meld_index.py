@@ -379,20 +379,25 @@ class IndexOrHeadView(object):
         dest_prefix = ensure_trailing_slash(dest_dir)
         index_diffs = iter_diff_records_undeleted(
             env, ["git", "diff-index", "-z", "--cached", "HEAD"])
-        index_paths = [d.path for d in index_diffs]
-        for path in index_paths:
-            repo_env.cmd(
-                ["git", "checkout-index",
-                 "--prefix={}".format(dest_prefix),
-                 path])
+        index_paths = set()
+        for diff in index_diffs:
+
+            # This is trying to preserve old tested behaviour without real
+            # understanding from me!
+            if diff.status == "U":
+                cmd = ["git", "checkout-index", "--stage=all"]
+            else:
+                cmd = ["git", "checkout-index"]
+
+            repo_env.cmd(cmd + ["--prefix={}".format(dest_prefix), diff.path])
+            index_paths.add(diff.path)
 
         # Use HEAD for modified files not already in index
         working_diffs = iter_diff_records_undeleted(
             env, ["git", "diff-index", "-z", "HEAD"])
-        index_set = set(index_paths)
         working_tree_paths = [d.path for d in working_diffs]
         for path in working_tree_paths:
-            if path not in index_set:
+            if path not in index_paths:
                 dest_path = os.path.join(dest_dir, path)
                 self.check_out_head(repo_env, path, dest_path)
 
