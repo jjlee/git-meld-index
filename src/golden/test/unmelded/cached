@@ -48,17 +48,7 @@ index 0000000..d2e14c5
 +++ b/partially_staged
 @@ -0,0 +1 @@
 +partially staged
-diff --git a/rename_after b/rename_after
-new file mode 100644
-index 0000000..b297ab5
---- /dev/null
-+++ b/rename_after
-@@ -0,0 +1 @@
-+renamed
-diff --git a/rename_before b/rename_before
-deleted file mode 100644
-index b297ab5..0000000
---- a/rename_before
-+++ /dev/null
-@@ -1 +0,0 @@
--renamed
+diff --git a/rename_before b/rename_after
+similarity index 100%
+rename from rename_before
+rename to rename_after
