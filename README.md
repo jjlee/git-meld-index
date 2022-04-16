@@ -1,14 +1,13 @@
 # git-meld-index
 
-This is new code, please exercise caution (See Important Caveats below).
-
 git-meld-index runs [meld](http://meldmerge.org/) -- or any other git
 difftool (kdiff3, diffuse, etc.) -- to allow you to interactively
 stage changes to the git index (also known as the git staging area).
 
 This is similar to the functionality of `git add -p`, and `git add
 --interactive`.  In some cases meld is easier / quicker to use than
-`git add -p`.  That's because meld allows you, for example, to:
+`git add -p` or the staging feature in tools like `git gui`.  That's
+because meld allows you, for example, to:
 
 * see more context
 * see intra-line diffs
@@ -18,15 +17,21 @@ This is similar to the functionality of `git add -p`, and `git add
 
 ## Requirements
 
-I'm using git 1.9.1 and meld 1.8.4.  I expect later versions will
-work.  It works with Python 2.7 (likely 2.6 also).  Python 3 probably
-doesn't work yet.
+Python 3.
 
-There is no support for MS Windows.  I have only tested on Linux but
-it should work on BSDs or OS X.
+I'm using git 2.35.1, and this is probably a bit fragile to what git version you
+have.
+
+I have only tested on Linux but it should work on BSDs or OS X.
 
 
 ## Install
+
+To install from the latest release
+
+```
+pip install https://github.com/jjlee/git-meld-index/archive/release.zip
+```
 
 To install a specific release:
 
@@ -34,7 +39,7 @@ To install a specific release:
 pip install https://github.com/jjlee/git-meld-index/archive/0.2.2.zip
 ```
 
-Or from HEAD of master branch:
+To install from the master branch:
 
 ```
 pip install https://github.com/jjlee/git-meld-index/archive/master.zip
@@ -100,27 +105,9 @@ git meld-index --help
 
 ## Important Caveats
 
-Patches welcome.
-
-1. This is new, beta quality code and will have bugs.
-
-	For example, the following have not received any attention whatsoever:
-
-	* In-progress merges and rebases
-	* Git submodules
-
-	File moves haven't received much attention either.  There are probably
-	other cases which haven't received proper testing also.
-
-	Code loss is conceivable but unlikely since it only changes the index,
-	not the working tree, and changes in the index are normally present
-	also in the working tree.  You should be a bit more cautious if you
-	have changes in your index that you've removed from your working tree
-	(this is not a common thing to do).
-
-	I expect but haven't tested that submodules are ignored, and file
-	moves, and in-progress merges and rebases are not treated
-	specially, which is probably at least somewhat reasonable.
+1. Be a bit cautious if you have changes in your index that you've
+removed from your working tree (this is not a common thing to do and I
+don't personally do this much).
 
 2. If this functionality gets implemented in git itself I'll likely
 stop maintaining this.  I have no involvement with development of git,
@@ -129,9 +116,9 @@ but I'd guess it's not unlikely somebody might add a 'git addtool'.
 3. Command line usage and behaviour are subject to change.
 
 
-## Less Important Caveats
+## Plans
 
-Again, patches welcome.
+Patches welcome.
 
 It would make sense to add support for the equivalent of `git reset
 -p`.  One way to do this would be a 3-way diff with from left to
@@ -142,8 +129,7 @@ be best to have both options available.
 It would make sense to be able to update the view of the working copy
 also (by copying back edited files from the temporary directory into
 the working copy).  This is a bit riskier (bugs could more easily
-cause code loss) so I don't want to implement it until it has seen
-some use and has more comprehensive automated tests.
+cause code loss) so would need more comprehensive automated tests.
 
 Git submodules are ignored.  This could probably be improved
 (git-difftool does something with these).
@@ -165,6 +151,18 @@ those files also.
 A. Because that would not allow using the "Copy to right" feature of
 meld (on e.g. untracked or modified files).
 
+Q. How can I abort my changes?
 
-John Lee, 2015-06
+A. Type Control-C at the command line from which you launched `git
+meld-index`. For `vimdiff` you can type `:cq` to quit with abort.
+
+Q. Why not just use &lt;favourite staging tool&gt;?
+
+A. Different tools have different pros and cons.  You should use what
+works best for you for a given task!  However, I do find tools like
+meld have some advantages -- see the list at the top of this README
+for some of them.  Try it and see what works for you.
+
+
+John Lee, 2015-07
 jjl@pobox.com

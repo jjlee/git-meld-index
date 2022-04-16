@@ -1,5 +1,5 @@
-git-difftool(1)
-===============
+git-meld-index(1)
+=================
 
 NAME
 ----

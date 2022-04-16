@@ -1,3 +1,18 @@
+diff --git a/changed_type_staged b/changed_type_staged
+deleted file mode 100644
+index e528e08..0000000
+--- a/changed_type_staged
++++ /dev/null
+@@ -1 +0,0 @@
+-changed_type
+diff --git a/changed_type_staged b/changed_type_staged
+new file mode 120000
+index 0000000..37b19fd
+--- /dev/null
++++ b/changed_type_staged
+@@ -0,0 +1 @@
++nonexistent_target
+\ No newline at end of file
 diff --git a/deleted_from_index b/deleted_from_index
 deleted file mode 100644
 index 2b9f771..0000000
@@ -33,3 +48,7 @@ index 0000000..d2e14c5
 +++ b/partially_staged
 @@ -0,0 +1 @@
 +partially staged
+diff --git a/rename_before b/rename_after
+similarity index 100%
+rename from rename_before
+rename to rename_after

@@ -10,7 +10,6 @@ If no actions are given, print the tree of actions and do nothing.
 # It requires asciidoc and xmlto to build the manpage.
 
 import argparse
-import json
 import os
 import sys
 
@@ -44,7 +43,7 @@ class Releaser(object):
         next_ = "dummy"
         try:
             tag_lines = release.get_cmd_stdout(
-                self._env, ["git", "show-ref", "--tags"])
+                self._env, ["git", "show-ref", "--tags"]).decode()
             tags = []
             for line in tag_lines.splitlines():
                 tag = line.split()[1].split("refs/tags/")[1]
@@ -72,16 +71,19 @@ class Releaser(object):
         self._base_env.cmd(["mkdir", "-p", self._clone_path])
         self._env.cmd(["git", "clone", self._repo, self._clone_path])
 
+    def checkout_master(self, log):
+        self._env.cmd(["git", "checkout", "-B", "master", "origin/master"])
+
     def guess_next_tag(self, log):
         # Obviously if you've already tagged in this repo you don't want this
         self._set_tag_name()
 
     def print_tag(self, log):
-        print self._tag_name
+        print(self._tag_name)
 
     def merge_to_release(self, log):
         self._env.cmd(["git", "checkout", "-b", "release", "origin/release"])
-        self._env.cmd(["git", "merge", "--no-edit", "master"])
+        self._env.cmd(["git", "merge", "-X", "theirs", "--no-edit", "master"])
 
     def _update_magic_version(self, version, message):
         version_path = "src/git_meld_index.py"
@@ -124,20 +126,20 @@ class Releaser(object):
             xml])
 
     def commit_manpage(self, log):
+        self._env.cmd(["git", "add", "doc/git-meld-index.1"])
         try:
-            self._env.cmd(["git", "diff", "--exit-code"])
+            self._env.cmd(["git", "diff", "--cached", "--exit-code"])
         except cmd_env.CommandFailedError:
-            self._env.cmd(["git", "add", "doc/git-meld-index.1"])
-            self._env.cmd(["git", "commit", "-m", "Built manpage"])
+            self._env.cmd(["git", "commit", "-m", "Built manpage",
+                           "doc/git-meld-index.1"])
         else:
-            # Manpage unchanged, nothing to commit
             pass
 
     def tag(self, log):
         self._env.cmd(["git", "tag", self._tag_name])
 
     def test(self, log):
-        self._env.cmd(["nosetests", "-v", "src"])
+        self._env.cmd(["python", "src/test_git_meld_index.py", "--verbose"])
 
     def diff(self, log):
         self._env.cmd(["git", "diff", "master"])
@@ -150,28 +152,16 @@ class Releaser(object):
         self._env.cmd(["git", "push", self._repo, "release"])
         self._env.cmd(["git", "push", self._repo, self._tag_name])
 
-    def release_to_github(self, log):
-        release = {
-            "tag_name": self._tag_name,
-            "target_commitish": self._tag_name,
-            "name": self._tag_name,
-            "body": "Release of version " + self._tag_name,
-            "draft": True,
-            "prerelease": False
-        }
-        url = ("https://api.github.com/repos/"
-               ":jjlee/:git-meld-index/releases?access_token=:" +
-               self._github_access_token)
-        data = json.dumps(release)
-        self._env.cmd(["curl", "--data", data, url])
-
     @action_tree.action_node
     def prepare(self):
         return [
             self.destroy,
             self.clone,
+            self.checkout_master,
             self.guess_next_tag,
             self.print_tag,
+            self.build_manpage,
+            self.commit_manpage,
             self.merge_to_release,
             self.update_version_in_readme,
             self.build_manpage,
@@ -188,8 +178,6 @@ class Releaser(object):
         return [
             self.prepare,
             self.push,
-            # Seems github does this by default just by creating a tag!
-            # self.release_to_github,
         ]
 
 

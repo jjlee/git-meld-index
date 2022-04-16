@@ -1,4 +1,7 @@
+|-- changed_type
+|-- changed_type_staged -> nonexistent_target
 |-- modified
 |-- modified_staged
 |-- new_staged
-`-- partially_staged
+|-- partially_staged
+`-- rename_after

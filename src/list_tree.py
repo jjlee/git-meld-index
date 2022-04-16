@@ -1,10 +1,5 @@
 # Based on code I contributed to nose -- John Lee
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import itertools
 import os
 import re

@@ -1,8 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import errno
 import os
 import subprocess
@@ -48,7 +43,7 @@ translation = maketrans(b" ()", b"_--")
 
 def write_translated_symlink_cmd(link, data):
     bytes_ = data.encode("ascii")
-    target = bytes_.translate(translation).replace(b"\n", b"") + "_target"
+    target = bytes_.translate(translation).replace(b"\n", b"") + b"_target"
     return write_symlink_cmd(link, target.decode("ascii"))
 
 
@@ -59,8 +54,8 @@ def write_executable_cmd(filename, data):
 
 class Repo(object):
 
-    # TODO: Don't use porcelain (init/add/commit/rm)?  Seems fairly safe /
-    # appropriate (for test realism) here though.
+    # One is not supposed to use porcelain in scripts (init/add/commit/rm).
+    # However, it seems fairly safe / appropriate (for test realism) here.
 
     def __init__(self, env,
                  make_file_cmd=write_file_cmd,
@@ -111,6 +106,19 @@ class Repo(object):
         self.add_unmodified(name, initial_content)
         self._cmd("git", "rm", name)
 
+    def add_moved(self, name, initial_content, new_name):
+        # Really just a remove and an add
+        self.add_unmodified(name, initial_content)
+        self._cmd("git", "mv", name, new_name)
+
+    def add_changed_type(self, name, initial_content):
+        self.add_unmodified(name, initial_content)
+        self._cmd("ln", "-sfT", "nonexistent_target", name)
+
+    def add_changed_type_staged(self, name, initial_content):
+        self.add_changed_type(name, initial_content)
+        self._cmd("git", "add", name)
+
 
 def do_standard_repo_changes(repo, path_prefix=""):
     repo.add_untracked(path_prefix + "untracked", "untracked\n")
@@ -131,6 +139,13 @@ def do_standard_repo_changes(repo, path_prefix=""):
     repo.add_deleted_from_index_and_working_tree(
         path_prefix + "deleted_from_index_and_working_tree",
         "deleted from index and working tree\n")
+    repo.add_moved(
+        path_prefix + "rename_before",
+        "renamed\n",
+        path_prefix + "rename_after")
+    repo.add_changed_type(path_prefix + "changed_type", "changed_type\n")
+    repo.add_changed_type_staged(path_prefix + "changed_type_staged",
+                                 "changed_type\n")
 
 
 def make_standard_repo(env, path_prefix=""):
@@ -243,7 +258,7 @@ class WriteViewMixin(object):
     def assert_write_golden(
             self, env, make_view_from_repo_path, golden_file_name):
         path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+            env.cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
         view = make_view_from_repo_path(path)
         out = self.make_temp_dir()
         view.write(env, out)
@@ -252,32 +267,42 @@ class WriteViewMixin(object):
         self.assert_golden_file(listing, golden_file_name)
 
     def assert_roundtrip_golden(
-            self, env, make_view_from_repo_path, golden_file_name):
+            self, env, make_view_from_repo_path,
+            golden_file_name=None,
+            extra_invariant_funcs=()
+    ):
         # .write() / .apply() cycle leaves repository (and index in particular)
         # unchanged
-        def diffs():
-            diff = env.cmd(["git", "diff"]).stdout_output
-            cached = env.cmd(["git", "diff", "--cached"]).stdout_output
-            return """\
+        def invariant():
+            diff = env.cmd(["git", "diff"]).stdout_output.decode()
+            cached = env.cmd(["git", "diff", "--cached"]).stdout_output.decode()
+            diffs = """\
 git diff
 {0}
 
 git diff --cached
 {1}
 """.format(diff, cached)
-        before = diffs()
+            if extra_invariant_funcs:
+                extra = "\n".join(str(func()) for func in extra_invariant_funcs)
+                return "\n".join([diffs, extra, ""])
+            else:
+                return diffs
+
+        before = invariant()
 
         path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+            env.cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
         view = make_view_from_repo_path(path)
         out = self.make_temp_dir()
         view.write(env, out)
         listing = list_tree.ls_tree(out)
         listing = listing.replace(path, '<repo>')
-        self.assert_golden_file(listing, golden_file_name)
+        if golden_file_name is not None:
+            self.assert_golden_file(listing, golden_file_name)
         view.apply(env, out)
 
-        after = diffs()
+        after = invariant()
         self.assert_equal_golden(before, after)
 
 
@@ -313,23 +338,13 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
             env, ["git", "diff-files", "-z"])
         self.assertEqual(
             [record.path for record in records],
-            ['deleted', "modified", "partially_staged"])
+            ["changed_type", "deleted", "modified", "partially_staged"])
 
     def test_write(self):
         env = self.make_env()
         make_standard_repo(env)
         self.assert_write_golden(
             env, self.make_view, "test_write_index_or_head")
-
-    def test_write_symlink(self):
-        env = self.make_env()
-        repo = Repo(env,
-                    make_file_cmd=write_translated_symlink_cmd,
-                    change_file_cmd=write_translated_symlink_cmd)
-        do_standard_repo_changes(repo)
-        self.assert_write_golden(
-            env, self.make_view,
-            "test_write_index_or_head_symlink")
 
     def test_roundtrip_symlink(self):
         env = self.make_env()
@@ -347,20 +362,76 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         self.assert_roundtrip_golden(
             env, self.make_view, "test_write_index_or_head_executable")
 
+    def _create_conflict(self, env, repo):
+        repo.add_unmodified("file", "content\n")
+        env.cmd(["git", "checkout", "-b", "feature"])
+        env.cmd(append_file_cmd("file", "feature branch work\n"))
+        env.cmd(["git", "commit", "-m", "Made changes", "file"])
+        env.cmd(["git", "checkout", "master"])
+        env.cmd(append_file_cmd("file", "conflicting work\n"))
+        env.cmd(["git", "commit", "-m", "Conflicting changes", "file"])
+
+    def test_roundtrip_in_progress_merge(self):
+        env = self.make_env()
+        repo = Repo(env)
+        self._create_conflict(env, repo)
+        try:
+            env.cmd(["git", "merge", "feature"])
+        except git_meld_index.CalledProcessError:
+            pass
+        else:
+            assert False, "merge should fail because of conflict"
+        def is_merge_in_progress():
+            return git_meld_index.try_cmd(
+                env, ["test", "-f", ".git/MERGE_BASE"])
+        self.assert_roundtrip_golden(
+            env, self.make_view, "test_write_index_or_head_in_progress_merge",
+            extra_invariant_funcs=(is_merge_in_progress, ))
+
+    def test_roundtrip_in_progress_rebase(self):
+        env = self.make_env()
+        repo = Repo(env)
+        self._create_conflict(env, repo)
+        env.cmd(["git", "checkout", "feature"])
+        try:
+            env.cmd(["git", "rebase", "master"])
+        except git_meld_index.CalledProcessError:
+            pass
+        else:
+            assert False, "rebase should fail because of conflict"
+        def is_rebase_in_progress():
+            return git_meld_index.try_cmd(
+                env, ["test", "-d", ".git/rebase-apply"])
+        self.assert_roundtrip_golden(
+            env, self.make_view, "test_write_index_or_head_in_progress_rebase",
+            extra_invariant_funcs=(is_rebase_in_progress, ))
+
+    def test_roundtrip_submodule(self):
+        env = self.make_env()
+        submodule_repo_env = self.make_env()
+        repo = Repo(env)
+        repo.add_unmodified("file", "content\n")
+        submodule_repo = Repo(submodule_repo_env)
+        submodule_repo.add_unmodified("file", "content\n")
+        submodule_path = trim(
+            submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output.decode(),
+            suffix="\n")
+        env.cmd(["git", "submodule", "add", submodule_path, "sub"])
+        def submodule_status():
+            return env.cmd(["git", "submodule", "status"]).stdout_output.decode()
+        self.assert_roundtrip_golden(
+            env, self.make_view,
+            "test_write_index_or_head_in_progress_submodule",
+            extra_invariant_funcs=(submodule_status, ))
+
+    # I can't be bothered to fix this case at the moment
+    # def test_roundtrip_empty_repo(self):
+    #     env = self.make_env()
+    #     Repo(env)
+    #     self.assert_roundtrip_golden(env, self.make_view)
+
 
 class TestEndToEnd(TestCase):
-
-    # TODO: Cover these
-    # symlinks
-    # file / dir moves
-
-    # DONE: A: addition of a file
-    # TODO: C: copy of a file into a new one
-    # DONE: D: deletion of a file
-    # DONE: M: modification of the contents or mode of a file
-    # TODO: R: renaming of a file
-    # TODO: T: change in the type of the file
-    # TODO: U: file is unmerged (you must complete the merge before it can be committed)
 
     def write_fake_meld(self, env, new_content_dir):
         left_listing_path = os.path.join(self.make_temp_dir(), "left")
@@ -395,9 +466,7 @@ rsync -a {new_content}/ "$right"
 
     def write_diffs(self, env):
         diff_output = self.make_temp_dir()
-        # TODO: porcelain
         env.cmd(["sh", "-c", "git diff > {}/diff".format(diff_output)])
-        # TODO: porcelain
         env.cmd(
             ["sh", "-c", "git diff --cached > {}/cached".format(diff_output)])
         env.cmd(
@@ -408,7 +477,7 @@ rsync -a {new_content}/ "$right"
 
     def check(self, golden_dir, env, prefix=""):
         repo_path = trim(
-            env.read_cmd(["readlink", "-e", "."]).stdout_output, suffix="\n")
+            env.read_cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
 
         self.assert_golden(
             self.write_diffs(env), os.path.join(golden_dir, "unmelded"))
@@ -416,12 +485,13 @@ rsync -a {new_content}/ "$right"
         # Modified or untracked files in the working tree
         working_tree_sources = ["untracked", "partially_staged", "modified",
                                 "modified_staged", "new_staged",
-                                "deleted_from_index"]
+                                "deleted_from_index", "rename_after"]
         # Everything in the index that is also modified in working tree
         # (including new or untracked) -- and therefore has something that
         # could be staged
         index_destinations = [
-            "modified", "modified_staged", "new_staged", "partially_staged"]
+            "changed_type", "modified", "modified_staged", "new_staged",
+            "partially_staged", "rename_after"]
 
         def add_prefix(paths):
             return [prefix + path for path in paths]

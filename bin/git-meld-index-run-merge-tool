@@ -3,7 +3,7 @@
 # Based on git-difftool--helper
 
 TOOL_MODE=diff
-. $(git --exec-path)/git-mergetool--lib
+. "$(git --exec-path)/git-mergetool--lib"
 
 if test -n "$GIT_DIFF_TOOL"
 then
@@ -14,6 +14,7 @@ fi
 
 LOCAL="$1"
 REMOTE="$2"
+initialize_merge_tool "$merge_tool"
 run_merge_tool "$merge_tool" false
 
 exit 0

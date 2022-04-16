@@ -1,6 +1,9 @@
+|-- changed_type -> nonexistent_target
+|-- changed_type_staged -> nonexistent_target
 |-- deleted_from_index
 |-- modified
 |-- modified_staged
 |-- new_staged
 |-- partially_staged
+|-- rename_after
 `-- untracked
