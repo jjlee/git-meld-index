@@ -140,7 +140,7 @@ class Releaser(object):
         self._env.cmd(["git", "tag", self._tag_name])
 
     def test(self, log):
-        self._env.cmd(["nosetests", "-v", "src"])
+        self._env.cmd(["python", "src/test_git_meld_index.py", "--verbose"])
 
     def diff(self, log):
         self._env.cmd(["git", "diff", "master"])
