@@ -381,15 +381,21 @@ class IndexOrHeadView(object):
             env, ["git", "diff-index", "-z", "--cached", "HEAD"])
         index_paths = set()
         for diff in index_diffs:
-
-            # This is trying to preserve old tested behaviour without real
-            # understanding from me!
-            if diff.status == "U":
-                cmd = ["git", "checkout-index", "--stage=all"]
-            else:
-                cmd = ["git", "checkout-index"]
-
-            repo_env.cmd(cmd + ["--prefix={}".format(dest_prefix), diff.path])
+            # Note that in the unmerged state, typically the index contains
+            # *three* versions of your file (which you can see using `git
+            # ls-files -u`): the common ancestor, HEAD, and MERGE_HEAD.  We
+            # don't want to lose that unmerged state unless the user explicitly
+            # edits the unmerged file using meld (running git meld-index,
+            # editing nothing, then exiting should always leave your repo
+            # unchanged).  If we added the file to the filesystem tree we're
+            # building (either with checkout-index or below with
+            # .check_out_head()), that unmerged state would get blown away on
+            # .apply().  The user can still explicitly stage text from the
+            # working copy version with conflict markers using "copy to right"
+            # and then resolve the conflict markers on the right hand side, all
+            # in meld.
+            if diff.status != "U":
+                repo_env.cmd(["git", "checkout-index", "--prefix={}".format(dest_prefix), diff.path])
             index_paths.add(diff.path)
 
         # Use HEAD for modified files not already in index
