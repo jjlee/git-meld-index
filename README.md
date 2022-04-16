@@ -39,8 +39,11 @@ To install a specific release:
 pip install https://github.com/jjlee/git-meld-index/archive/<release tag here>.zip
 ```
 
-Currently you can't install this way from the master branch because
-the manpage isn't committed there.
+To install from the master branch:
+
+```
+pip install https://github.com/jjlee/git-meld-index/archive/master.zip
+```
 
 If you want to avoid installers you can clone the repo and run the
 script directly:

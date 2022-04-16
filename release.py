@@ -83,7 +83,7 @@ class Releaser(object):
 
     def merge_to_release(self, log):
         self._env.cmd(["git", "checkout", "-b", "release", "origin/release"])
-        self._env.cmd(["git", "merge", "--no-edit", "master"])
+        self._env.cmd(["git", "merge", "-X", "theirs", "--no-edit", "master"])
 
     def _update_magic_version(self, version, message):
         version_path = "src/git_meld_index.py"
@@ -126,14 +126,13 @@ class Releaser(object):
             xml])
 
     def commit_manpage(self, log):
+        self._env.cmd(["git", "add", "doc/git-meld-index.1"])
         try:
-            self._env.cmd(["git", "diff", "--exit-code"])
+            self._env.cmd(["git", "diff", "--cached", "--exit-code"])
         except cmd_env.CommandFailedError:
             self._env.cmd(["git", "commit", "-m", "Built manpage",
                            "doc/git-meld-index.1"])
         else:
-            # Manpage unchanged, nothing to commit (seems this never happens
-            # because of date stamp in generated manpage...)
             pass
 
     def tag(self, log):
@@ -161,6 +160,8 @@ class Releaser(object):
             self.checkout_master,
             self.guess_next_tag,
             self.print_tag,
+            self.build_manpage,
+            self.commit_manpage,
             self.merge_to_release,
             self.update_version_in_readme,
             self.build_manpage,
