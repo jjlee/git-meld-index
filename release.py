@@ -43,7 +43,7 @@ class Releaser(object):
         next_ = "dummy"
         try:
             tag_lines = release.get_cmd_stdout(
-                self._env, ["git", "show-ref", "--tags"])
+                self._env, ["git", "show-ref", "--tags"]).decode()
             tags = []
             for line in tag_lines.splitlines():
                 tag = line.split()[1].split("refs/tags/")[1]
@@ -79,7 +79,7 @@ class Releaser(object):
         self._set_tag_name()
 
     def print_tag(self, log):
-        print self._tag_name
+        print(self._tag_name)
 
     def merge_to_release(self, log):
         self._env.cmd(["git", "checkout", "-b", "release", "origin/release"])
