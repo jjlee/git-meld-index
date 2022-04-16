@@ -36,7 +36,7 @@ pip install https://github.com/jjlee/git-meld-index/archive/release.zip
 To install a specific release:
 
 ```
-pip install https://github.com/jjlee/git-meld-index/archive/0.2.2.zip
+pip install https://github.com/jjlee/git-meld-index/archive/0.2.3.zip
 ```
 
 To install from the master branch:
