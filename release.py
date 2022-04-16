@@ -161,8 +161,6 @@ class Releaser(object):
             self.checkout_master,
             self.guess_next_tag,
             self.print_tag,
-            self.build_manpage,
-            self.commit_manpage,
             self.merge_to_release,
             self.update_version_in_readme,
             self.build_manpage,
