@@ -119,9 +119,11 @@ but I'd guess it's not unlikely somebody might add a 'git addtool'.
 3. Command line usage and behaviour are subject to change.
 
 
-## Plans
+## Ideas
 
 Patches welcome.
+
+CI testing against different git versions would be nice.
 
 It would make sense to add support for the equivalent of `git reset
 -p`.  One way to do this would be a 3-way diff with from left to
