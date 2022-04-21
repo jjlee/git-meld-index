@@ -20,7 +20,8 @@ because meld allows you, for example, to:
 Python 3.
 
 I'm using git 2.35.1, and this is probably a bit fragile to what git version you
-have.
+have (fragile as in maybe breaking completely sometimes, not fragile as in
+subtle bugs).
 
 I have only tested on Linux.  Probably it won't work on anything else (should be
 easy to fix for other unix-y systems -- I'd guess it will only fail because of
