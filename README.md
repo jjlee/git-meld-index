@@ -167,7 +167,3 @@ A. Different tools have different pros and cons.  You should use what
 works best for you for a given task!  However, I do find tools like
 meld have some advantages -- see the list at the top of this README
 for some of them.  Try it and see what works for you.
-
-
-John Lee, 2015-07
-jjl@pobox.com
