@@ -66,37 +66,6 @@ def try_cmd(env, args):
         return True
 
 
-class ReadableEnv(object):
-
-    """An env that supports .read_cmd
-
-    If you run all commands that might have side effects using .cmd, and all
-    other commands using .read_cmd, then --pretend (i.e. NullWrapper) will work
-    correctly but you can still read information from the env even with
-    --pretend in effect (e.g. use cat to read file contents).
-    """
-
-    def __init__(self, env, read_env):
-        self._env = env
-        self._read_env = read_env
-
-    def cmd(self, args, input=None, tty=False):
-        return self._env.cmd(args, input, tty)
-
-    def read_cmd(self, args, input=None, tty=False):
-        return self._read_env.cmd(args, input, tty)
-
-    def wrap(self, wrapper):
-        """Return a ReadableEnv wrapped with given wrapper.
-
-        Args:
-            wrapper (callable): An env wrapper
-
-        An env wrapper takes an env and returns an env.
-        """
-        return type(self)(wrapper(self._env), wrapper(self._read_env))
-
-
 class BasicEnv(object):
 
     """An environment in which to run a program.
@@ -133,6 +102,37 @@ class BasicEnv(object):
     def make_readable(cls):
         env = cls()
         return ReadableEnv(env, env)
+
+
+class ReadableEnv(object):
+
+    """An env that supports .read_cmd
+
+    If you run all commands that might have side effects using .cmd, and all
+    other commands using .read_cmd, then --pretend (i.e. NullWrapper) will work
+    correctly but you can still read information from the env even with
+    --pretend in effect (e.g. use cat to read file contents).
+    """
+
+    def __init__(self, env, read_env):
+        self._env = env
+        self._read_env = read_env
+
+    def cmd(self, args, input=None, tty=False):
+        return self._env.cmd(args, input, tty)
+
+    def read_cmd(self, args, input=None, tty=False):
+        return self._read_env.cmd(args, input, tty)
+
+    def wrap(self, wrapper):
+        """Return a ReadableEnv wrapped with given wrapper.
+
+        Args:
+            wrapper (callable): An env wrapper
+
+        An env wrapper takes an env and returns an env.
+        """
+        return type(self)(wrapper(self._env), wrapper(self._read_env))
 
 
 class PrefixCmdEnv(object):
