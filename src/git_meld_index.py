@@ -122,6 +122,7 @@ class ReadableEnv(object):
         return self._env.cmd(args, input, tty)
 
     def read_cmd(self, args, input=None, tty=False):
+        """Run a program as for .cmd(), but for use by side effect-free commands."""
         return self._read_env.cmd(args, input, tty)
 
     def wrap(self, wrapper):
