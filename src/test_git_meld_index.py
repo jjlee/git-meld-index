@@ -446,10 +446,12 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         do_standard_repo_changes(submodule_repo_2)
         def submodule_status():
             return env.cmd(["git", "submodule", "status"]).stdout_output.decode()
+        def submodule_git_status():
+            return submodule_repo_env_2.cmd(["git", "status"]).stdout_output.decode()
         self.assert_roundtrip_golden(
             env, self.make_view,
             "test_write_index_or_head_submodule_with_changes",
-            extra_invariant_funcs=(submodule_status, ))
+            extra_invariant_funcs=(submodule_status, submodule_git_status))
 
     # I can't be bothered to fix this case at the moment
     # def test_roundtrip_empty_repo(self):
