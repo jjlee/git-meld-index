@@ -360,6 +360,12 @@ class IndexOrHeadView(object):
         dest_dir_path = os.path.dirname(dest_path)
         if dest_dir_path != "":
             repo_env.cmd(["mkdir", "-p", dest_dir_path])
+        if mode == "160000":
+            # submodule
+            # git meld-index doesn't operate on submodules. if you want to meld
+            # a submodule, run git meld-index on the submodule itself, not on
+            # the repository that contains the submodule.
+            return
         if mode == "120000":
             # symlink
             cat_file_cmd = ["git", "cat-file", "blob", hash_]
