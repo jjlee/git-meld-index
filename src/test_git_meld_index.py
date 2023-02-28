@@ -416,7 +416,9 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         submodule_path = trim(
             submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output.decode(),
             suffix="\n")
-        env.cmd(["git", "submodule", "add", submodule_path, "sub"])
+        env.cmd(["git",
+                 "-c", "protocol.file.allow=always",
+                 "submodule", "add", submodule_path, "sub"])
         def submodule_status():
             return env.cmd(["git", "submodule", "status"]).stdout_output.decode()
         self.assert_roundtrip_golden(
