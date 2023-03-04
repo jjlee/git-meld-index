@@ -84,7 +84,7 @@ git meld-index
 
 You'll see meld (or your configured git difftool) pop up with:
 
-LEFT: temporary directory contining files copied from your working
+LEFT: temporary directory containing files copied from your working
 tree
 
 RIGHT: temporary directory with the contents of the index.  This also
