@@ -5,6 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Run tests against latest git
     steps:
+      - name: Check out
+        uses: actions/checkout@v3
       - name: Build
         uses: docker/build-push-action@v4
         with:
