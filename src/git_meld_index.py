@@ -1,6 +1,6 @@
 # The following line has to be the first non-blank / non-comment line after the
 # last __future__ import, for setup.py to read it.
-__version__ = "unreleased_version"
+__version__ = "0.0.0"
 
 from dataclasses import dataclass
 import argparse
