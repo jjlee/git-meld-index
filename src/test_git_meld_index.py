@@ -416,13 +416,42 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         submodule_path = trim(
             submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output.decode(),
             suffix="\n")
-        env.cmd(["git", "submodule", "add", submodule_path, "sub"])
+        env.cmd(["git",
+                 "-c", "protocol.file.allow=always",
+                 "submodule", "add", submodule_path, "sub"])
         def submodule_status():
             return env.cmd(["git", "submodule", "status"]).stdout_output.decode()
         self.assert_roundtrip_golden(
             env, self.make_view,
             "test_write_index_or_head_in_progress_submodule",
             extra_invariant_funcs=(submodule_status, ))
+
+    def test_roundtrip_committed_submodule_with_changes(self):
+        env = self.make_env()
+        submodule_repo_env = self.make_env()
+        repo = Repo(env)
+        repo.add_unmodified("file", "content\n")
+        submodule_repo = Repo(submodule_repo_env)
+        submodule_repo.add_unmodified("file", "content\n")
+        submodule_path = trim(
+            submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output.decode(),
+            suffix="\n")
+        env.cmd(["git",
+                 "-c", "protocol.file.allow=always",
+                 "submodule", "add", submodule_path, "sub"])
+        env.cmd(["git", "commit", "-am", "wip"])
+        submodule_repo_env_2 = git_meld_index.PrefixCmdEnv.make_readable(
+            git_meld_index.in_dir("sub"), env)
+        submodule_repo_2 = Repo(submodule_repo_env_2)
+        do_standard_repo_changes(submodule_repo_2)
+        def submodule_status():
+            return env.cmd(["git", "submodule", "status"]).stdout_output.decode()
+        def submodule_git_status():
+            return submodule_repo_env_2.cmd(["git", "status"]).stdout_output.decode()
+        self.assert_roundtrip_golden(
+            env, self.make_view,
+            "test_write_index_or_head_submodule_with_changes",
+            extra_invariant_funcs=(submodule_status, submodule_git_status))
 
     # I can't be bothered to fix this case at the moment
     # def test_roundtrip_empty_repo(self):
