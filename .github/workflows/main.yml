@@ -1,4 +1,7 @@
-on: [push]
+on:
+  push:
+  schedule:
+    - cron: '28 3 * * *'  # every day
 
 jobs:
   build-and-run:

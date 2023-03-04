@@ -19,13 +19,16 @@ because meld allows you, for example, to:
 
 Python 3.
 
-I'm using git 2.35.1, and this is probably a bit fragile to what git version you
-have (fragile as in maybe breaking completely sometimes, not fragile as in
-subtle bugs).
+I'm using the latest git from the Arch Linux rolling release (2.39.2 at time of
+writing).  This is probably a little bit fragile to what git version you have
+(fragile as in maybe breaking completely sometimes, not fragile as in subtle
+bugs).  I've set up CI to track recent git releases now so I hope I'll notice
+more quickly when it does.  If you notice it's not working for an old git
+version let me know and I'll take a look when I can.
 
-I have only tested on Linux.  Probably it won't work on anything else (should be
-easy to fix for other unix-y systems -- I'd guess it will only fail because of
-its use of the `-T` option of the `ln` command).
+I have only tested on Linux.  Probably it isn't working on anything else (should
+be easy to fix for other unix-y systems -- I'd guess it will only fail because
+of its use of the `-T` option of the `ln` command).
 
 
 ## Install
