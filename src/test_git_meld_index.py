@@ -8,13 +8,6 @@ import unittest
 import git_meld_index
 import list_tree
 
-# maketrans moved to bytes.maketrans in Python 3
-if hasattr(string, "maketrans"):
-    maketrans = string.maketrans
-else:
-    maketrans = bytes.maketrans
-
-
 def read_file(path):
     with open(path) as fh:
         return fh.read()
@@ -38,7 +31,7 @@ def write_symlink_cmd(link, target):
     return ["ln", "-sfT", target, link]
 
 
-translation = maketrans(b" ()", b"_--")
+translation = bytes.maketrans(b" ()", b"_--")
 
 def write_translated_symlink_cmd(link, data):
     bytes_ = data.encode("ascii")
