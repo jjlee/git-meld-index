@@ -52,7 +52,7 @@ def write_executable_cmd(filename, data):
             data, filename]
 
 
-class Repo(object):
+class Repo:
 
     # One is not supposed to use porcelain in scripts (init/add/commit/rm).
     # However, it seems fairly safe / appropriate (for test realism) here.
@@ -253,7 +253,7 @@ exec "$@"
     return ["sh", "-c", set_path_script, "inline_script"]
 
 
-class WriteViewMixin(object):
+class WriteViewMixin:
 
     def assert_write_golden(
             self, env, make_view_from_repo_path, golden_file_name):

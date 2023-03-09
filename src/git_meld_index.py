@@ -66,7 +66,7 @@ def try_cmd(env, args):
         return True
 
 
-class BasicEnv(object):
+class BasicEnv:
 
     """An environment in which to run a program.
     """
@@ -104,7 +104,7 @@ class BasicEnv(object):
         return ReadableEnv(env, env)
 
 
-class ReadableEnv(object):
+class ReadableEnv:
 
     """An env that supports .read_cmd
 
@@ -136,7 +136,7 @@ class ReadableEnv(object):
         return type(self)(wrapper(self._env), wrapper(self._read_env))
 
 
-class PrefixCmdEnv(object):
+class PrefixCmdEnv:
 
     def __init__(self, prefix_cmd, env):
         self._prefix_cmd = prefix_cmd
@@ -150,7 +150,7 @@ class PrefixCmdEnv(object):
         return readable_env.wrap(functools.partial(cls, prefix_cmd))
 
 
-class VerboseWrapper(object):
+class VerboseWrapper:
 
     def __init__(self, env):
         self._env = env
@@ -167,7 +167,7 @@ class VerboseWrapper(object):
         return readable_env.wrap(cls)
 
 
-class NullWrapper(object):
+class NullWrapper:
 
     def __init__(self, env):
         self._env = env
@@ -184,7 +184,7 @@ def shell_escape(args):
     return " ".join(pipes.quote(arg) for arg in args)
 
 
-class WorkArea(object):
+class WorkArea:
 
     def __init__(self, env, work_dir):
         self._env = env
@@ -254,7 +254,7 @@ def iter_diff_records_undeleted(repo_env, cmd):
             yield diff
 
 
-class AbstractViewInterface(object):
+class AbstractViewInterface:
 
     def write(self, env, dest_dir):
         """Write view to dest_dir.
@@ -284,7 +284,7 @@ class AbstractViewInterface(object):
         """
 
 
-class StageableWorkingTreeSubsetView(object):
+class StageableWorkingTreeSubsetView:
 
     label = "working_tree"
 
@@ -332,7 +332,7 @@ def make_git_permission_string(is_link, is_executable):
         return "100755" if is_executable else "100644"
 
 
-class IndexOrHeadView(object):
+class IndexOrHeadView:
 
     """View of files:
 
@@ -436,7 +436,7 @@ class IndexOrHeadView(object):
                 input=index_info.encode())
 
 
-class Cleanups(object):
+class Cleanups:
 
     def __init__(self):
         self._cleanups = []
@@ -473,7 +473,7 @@ class Cleanups(object):
         self.clean_up()
 
 
-class NullCleanups(object):
+class NullCleanups:
 
     def add_cleanup(self, func):
         pass
@@ -485,7 +485,7 @@ class NullCleanups(object):
         pass
 
 
-class TempMaker(object):
+class TempMaker:
 
     def __init__(self, add_cleanup, prefix=""):
         self._add_cleanup = add_cleanup
