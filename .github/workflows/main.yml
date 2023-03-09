@@ -1,0 +1,24 @@
+on:
+  push:
+  schedule:
+    - cron: '28 3 * * *'  # every day
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    name: Run tests against latest git
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+      - name: Build docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ci/Dockerfile
+          push: false
+          tags: test-image:latest
+      - name: Run tests in docker
+        uses: addnab/docker-run-action@v3
+        with:
+          image: test-image:latest
+          run: python3 /opt/test/src/test_git_meld_index.py

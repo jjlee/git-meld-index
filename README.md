@@ -19,10 +19,16 @@ because meld allows you, for example, to:
 
 Python 3.
 
-I'm using git 2.35.1, and this is probably a bit fragile to what git version you
-have.
+git-meld-index is probably a little bit fragile to what git version you have
+(fragile as in maybe breaking completely sometimes, not fragile as in subtle
+bugs).  I'm using the latest git from the Arch Linux rolling release (2.39.2 at
+time of writing).  I've set up CI to track recent git releases so I hope I'll
+notice when it does break.  If you notice it's not working for an old git
+version let me know and I'll take a look when I can.
 
-I have only tested on Linux but it should work on BSDs or OS X.
+I have only tested on Linux.  Probably it isn't working on anything else (should
+be easy to fix for other unix-y systems -- I'd guess it will only fail because
+of its use of the `-T` option of the `ln` command).
 
 
 ## Install
@@ -78,7 +84,7 @@ git meld-index
 
 You'll see meld (or your configured git difftool) pop up with:
 
-LEFT: temporary directory contining files copied from your working
+LEFT: temporary directory containing files copied from your working
 tree
 
 RIGHT: temporary directory with the contents of the index.  This also
@@ -95,9 +101,7 @@ side of meld that you just edited.
 
 At present changes to the left hand side (working copy) are discarded.
 
-For more information see the manpage (note the manpage is generated
-from source files so is only committed on the release branch and its
-release tags):
+For more information see the manpage:
 
 ```
 git meld-index --help
@@ -116,9 +120,11 @@ but I'd guess it's not unlikely somebody might add a 'git addtool'.
 3. Command line usage and behaviour are subject to change.
 
 
-## Plans
+## Ideas
 
 Patches welcome.
+
+CI testing against different git versions would be nice.
 
 It would make sense to add support for the equivalent of `git reset
 -p`.  One way to do this would be a 3-way diff with from left to
@@ -162,7 +168,3 @@ A. Different tools have different pros and cons.  You should use what
 works best for you for a given task!  However, I do find tools like
 meld have some advantages -- see the list at the top of this README
 for some of them.  Try it and see what works for you.
-
-
-John Lee, 2015-07
-jjl@pobox.com

@@ -6,15 +6,7 @@ import sys
 import unittest
 
 import git_meld_index
-from git_meld_index import trim
 import list_tree
-
-# maketrans moved to bytes.maketrans in Python 3
-if hasattr(string, "maketrans"):
-    maketrans = string.maketrans
-else:
-    maketrans = bytes.maketrans
-
 
 def read_file(path):
     with open(path) as fh:
@@ -39,7 +31,7 @@ def write_symlink_cmd(link, target):
     return ["ln", "-sfT", target, link]
 
 
-translation = maketrans(b" ()", b"_--")
+translation = bytes.maketrans(b" ()", b"_--")
 
 def write_translated_symlink_cmd(link, data):
     bytes_ = data.encode("ascii")
@@ -52,7 +44,7 @@ def write_executable_cmd(filename, data):
             data, filename]
 
 
-class Repo(object):
+class Repo:
 
     # One is not supposed to use porcelain in scripts (init/add/commit/rm).
     # However, it seems fairly safe / appropriate (for test realism) here.
@@ -253,12 +245,11 @@ exec "$@"
     return ["sh", "-c", set_path_script, "inline_script"]
 
 
-class WriteViewMixin(object):
+class WriteViewMixin:
 
     def assert_write_golden(
             self, env, make_view_from_repo_path, golden_file_name):
-        path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
+        path = env.cmd(["readlink", "-e", "."]).stdout_output.decode().removesuffix("\n")
         view = make_view_from_repo_path(path)
         out = self.make_temp_dir()
         view.write(env, out)
@@ -291,8 +282,7 @@ git diff --cached
 
         before = invariant()
 
-        path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
+        path = env.cmd(["readlink", "-e", "."]).stdout_output.decode().removesuffix("\n")
         view = make_view_from_repo_path(path)
         out = self.make_temp_dir()
         view.write(env, out)
@@ -413,16 +403,43 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         repo.add_unmodified("file", "content\n")
         submodule_repo = Repo(submodule_repo_env)
         submodule_repo.add_unmodified("file", "content\n")
-        submodule_path = trim(
-            submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output.decode(),
-            suffix="\n")
-        env.cmd(["git", "submodule", "add", submodule_path, "sub"])
+        submodule_path = (submodule_repo_env.cmd(["readlink", "-e", "."])
+                          .stdout_output.decode().removesuffix("\n"))
+        env.cmd(["git",
+                 "-c", "protocol.file.allow=always",
+                 "submodule", "add", submodule_path, "sub"])
         def submodule_status():
             return env.cmd(["git", "submodule", "status"]).stdout_output.decode()
         self.assert_roundtrip_golden(
             env, self.make_view,
             "test_write_index_or_head_in_progress_submodule",
             extra_invariant_funcs=(submodule_status, ))
+
+    def test_roundtrip_committed_submodule_with_changes(self):
+        env = self.make_env()
+        submodule_repo_env = self.make_env()
+        repo = Repo(env)
+        repo.add_unmodified("file", "content\n")
+        submodule_repo = Repo(submodule_repo_env)
+        submodule_repo.add_unmodified("file", "content\n")
+        submodule_path = (submodule_repo_env.cmd(["readlink", "-e", "."])
+                          .stdout_output.decode().removesuffix("\n"))
+        env.cmd(["git",
+                 "-c", "protocol.file.allow=always",
+                 "submodule", "add", submodule_path, "sub"])
+        env.cmd(["git", "commit", "-am", "wip"])
+        submodule_repo_env_2 = git_meld_index.PrefixCmdEnv.make_readable(
+            git_meld_index.in_dir("sub"), env)
+        submodule_repo_2 = Repo(submodule_repo_env_2)
+        do_standard_repo_changes(submodule_repo_2)
+        def submodule_status():
+            return env.cmd(["git", "submodule", "status"]).stdout_output.decode()
+        def submodule_git_status():
+            return submodule_repo_env_2.cmd(["git", "status"]).stdout_output.decode()
+        self.assert_roundtrip_golden(
+            env, self.make_view,
+            "test_write_index_or_head_submodule_with_changes",
+            extra_invariant_funcs=(submodule_status, submodule_git_status))
 
     # I can't be bothered to fix this case at the moment
     # def test_roundtrip_empty_repo(self):
@@ -476,8 +493,8 @@ rsync -a {new_content}/ "$right"
         return diff_output
 
     def check(self, golden_dir, env, prefix=""):
-        repo_path = trim(
-            env.read_cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
+        repo_path = (env.read_cmd(["readlink", "-e", "."])
+                     .stdout_output.decode().removesuffix("\n"))
 
         self.assert_golden(
             self.write_diffs(env), os.path.join(golden_dir, "unmelded"))

@@ -35,7 +35,7 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Operating System :: POSIX",
     "Programming Language :: Python",
-    # "Programming Language :: Python :: 3",  # TODO
+    "Programming Language :: Python :: 3",
     "Topic :: Software Development :: Version Control",
 ]
 

@@ -1,6 +1,6 @@
 # The following line has to be the first non-blank / non-comment line after the
 # last __future__ import, for setup.py to read it.
-__version__ = "0.2.3"
+__version__ = "0.0.0"
 
 from dataclasses import dataclass
 import argparse
@@ -27,15 +27,6 @@ log = logging.getLogger()
 class UnknownURISchemeError(ValueError):
 
     pass
-
-
-def trim(text, prefix="", suffix=""):
-    assert len(text) >= len(prefix) + len(suffix), (text, prefix, suffix)
-    assert text.startswith(prefix), (text, prefix)
-    assert text.endswith(suffix), (text, suffix)
-    start = len(prefix)
-    end = len(text) - len(suffix)
-    return text[start:end]
 
 
 class CalledProcessError(subprocess.CalledProcessError):
@@ -66,38 +57,7 @@ def try_cmd(env, args):
         return True
 
 
-class ReadableEnv(object):
-
-    """An env that supports .read_cmd
-
-    If you run all commands that might have side effects using .cmd, and all
-    other commands using .read_cmd, then --pretend (i.e. NullWrapper) will work
-    correctly but you can still read information from the env even with
-    --pretend in effect (e.g. use cat to read file contents).
-    """
-
-    def __init__(self, env, read_env):
-        self._env = env
-        self._read_env = read_env
-
-    def cmd(self, args, input=None, tty=False):
-        return self._env.cmd(args, input, tty)
-
-    def read_cmd(self, args, input=None, tty=False):
-        return self._read_env.cmd(args, input, tty)
-
-    def wrap(self, wrapper):
-        """Return a ReadableEnv wrapped with given wrapper.
-
-        Args:
-            wrapper (callable): An env wrapper
-
-        An env wrapper takes an env and returns an env.
-        """
-        return type(self)(wrapper(self._env), wrapper(self._read_env))
-
-
-class BasicEnv(object):
+class BasicEnv:
 
     """An environment in which to run a program.
     """
@@ -135,7 +95,39 @@ class BasicEnv(object):
         return ReadableEnv(env, env)
 
 
-class PrefixCmdEnv(object):
+class ReadableEnv:
+
+    """An env that supports .read_cmd
+
+    If you run all commands that might have side effects using .cmd, and all
+    other commands using .read_cmd, then --pretend (i.e. NullWrapper) will work
+    correctly but you can still read information from the env even with
+    --pretend in effect (e.g. use cat to read file contents).
+    """
+
+    def __init__(self, env, read_env):
+        self._env = env
+        self._read_env = read_env
+
+    def cmd(self, args, input=None, tty=False):
+        return self._env.cmd(args, input, tty)
+
+    def read_cmd(self, args, input=None, tty=False):
+        """Run a program as for .cmd(), but for use by side effect-free commands."""
+        return self._read_env.cmd(args, input, tty)
+
+    def wrap(self, wrapper):
+        """Return a ReadableEnv wrapped with given wrapper.
+
+        Args:
+            wrapper (callable): An env wrapper
+
+        An env wrapper takes an env and returns an env.
+        """
+        return type(self)(wrapper(self._env), wrapper(self._read_env))
+
+
+class PrefixCmdEnv:
 
     def __init__(self, prefix_cmd, env):
         self._prefix_cmd = prefix_cmd
@@ -149,7 +141,7 @@ class PrefixCmdEnv(object):
         return readable_env.wrap(functools.partial(cls, prefix_cmd))
 
 
-class VerboseWrapper(object):
+class VerboseWrapper:
 
     def __init__(self, env):
         self._env = env
@@ -166,7 +158,7 @@ class VerboseWrapper(object):
         return readable_env.wrap(cls)
 
 
-class NullWrapper(object):
+class NullWrapper:
 
     def __init__(self, env):
         self._env = env
@@ -183,7 +175,7 @@ def shell_escape(args):
     return " ".join(pipes.quote(arg) for arg in args)
 
 
-class WorkArea(object):
+class WorkArea:
 
     def __init__(self, env, work_dir):
         self._env = env
@@ -234,7 +226,7 @@ def pairwise(iterable):
 
 def parse_raw_diff(diff, path):
     mode_after, mode_before, hash_after, hash_before, status = diff.split(" ")
-    mode_after = trim(mode_after, prefix=":")
+    mode_after = mode_after.removeprefix(":")
     return DiffRecord(
         mode_after, mode_before, hash_after, hash_before, status, path)
 
@@ -253,7 +245,7 @@ def iter_diff_records_undeleted(repo_env, cmd):
             yield diff
 
 
-class AbstractViewInterface(object):
+class AbstractViewInterface:
 
     def write(self, env, dest_dir):
         """Write view to dest_dir.
@@ -283,7 +275,7 @@ class AbstractViewInterface(object):
         """
 
 
-class StageableWorkingTreeSubsetView(object):
+class StageableWorkingTreeSubsetView:
 
     label = "working_tree"
 
@@ -331,7 +323,7 @@ def make_git_permission_string(is_link, is_executable):
         return "100755" if is_executable else "100644"
 
 
-class IndexOrHeadView(object):
+class IndexOrHeadView:
 
     """View of files:
 
@@ -359,6 +351,12 @@ class IndexOrHeadView(object):
         dest_dir_path = os.path.dirname(dest_path)
         if dest_dir_path != "":
             repo_env.cmd(["mkdir", "-p", dest_dir_path])
+        if mode == "160000":
+            # submodule
+            # git meld-index doesn't operate on submodules. if you want to meld
+            # a submodule, run git meld-index on the submodule itself, not on
+            # the repository that contains the submodule.
+            return
         if mode == "120000":
             # symlink
             cat_file_cmd = ["git", "cat-file", "blob", hash_]
@@ -422,14 +420,14 @@ class IndexOrHeadView(object):
             is_executable = try_cmd(src_env, ["test", "-x", path])
             permission = make_git_permission_string(is_link, is_executable)
             hash_object = repo_env.cmd(["git", "hash-object", "-w", src_path])
-            hash_ = trim(hash_object.stdout_output.decode(), suffix="\n")
+            hash_ = hash_object.stdout_output.decode().removesuffix("\n")
             index_info = "{} {}\t{}".format(permission, hash_, path)
             repo_env.cmd(
                 ["git", "update-index", "--index-info"],
                 input=index_info.encode())
 
 
-class Cleanups(object):
+class Cleanups:
 
     def __init__(self):
         self._cleanups = []
@@ -466,7 +464,7 @@ class Cleanups(object):
         self.clean_up()
 
 
-class NullCleanups(object):
+class NullCleanups:
 
     def add_cleanup(self, func):
         pass
@@ -478,7 +476,7 @@ class NullCleanups(object):
         pass
 
 
-class TempMaker(object):
+class TempMaker:
 
     def __init__(self, add_cleanup, prefix=""):
         self._add_cleanup = add_cleanup
@@ -588,7 +586,7 @@ area) using any git difftool (such as meld).
         print(env.cmd(["git", "mergetool", "--tool-help"]).stdout_output.decode())
         return 0
 
-    repo_dir = trim(env.read_cmd(repo_dir_cmd()).stdout_output.decode(), suffix="\n")
+    repo_dir = env.read_cmd(repo_dir_cmd()).stdout_output.decode().removesuffix("\n")
     left = arguments.left
     if left is None:
         left = "working:" + repo_dir
@@ -598,9 +596,8 @@ area) using any git difftool (such as meld).
     tool = arguments.tool
     if arguments.gui:
         try:
-            tool = trim(
-                env.cmd(["git", "config", "-z", "diff.guitool"]).stdout_output,
-                suffix=b"\0").decode()
+            tool = (env.cmd(["git", "config", "-z", "diff.guitool"])
+                    .stdout_output.removesuffix(b"\0").decode())
         except CalledProcessError:
             pass
     with cleanups:
