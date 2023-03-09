@@ -6,7 +6,6 @@ import sys
 import unittest
 
 import git_meld_index
-from git_meld_index import trim
 import list_tree
 
 # maketrans moved to bytes.maketrans in Python 3
@@ -257,8 +256,7 @@ class WriteViewMixin:
 
     def assert_write_golden(
             self, env, make_view_from_repo_path, golden_file_name):
-        path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
+        path = env.cmd(["readlink", "-e", "."]).stdout_output.decode().removesuffix("\n")
         view = make_view_from_repo_path(path)
         out = self.make_temp_dir()
         view.write(env, out)
@@ -291,8 +289,7 @@ git diff --cached
 
         before = invariant()
 
-        path = trim(
-            env.cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
+        path = env.cmd(["readlink", "-e", "."]).stdout_output.decode().removesuffix("\n")
         view = make_view_from_repo_path(path)
         out = self.make_temp_dir()
         view.write(env, out)
@@ -413,9 +410,8 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         repo.add_unmodified("file", "content\n")
         submodule_repo = Repo(submodule_repo_env)
         submodule_repo.add_unmodified("file", "content\n")
-        submodule_path = trim(
-            submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output.decode(),
-            suffix="\n")
+        submodule_path = (submodule_repo_env.cmd(["readlink", "-e", "."])
+                          .stdout_output.decode().removesuffix("\n"))
         env.cmd(["git",
                  "-c", "protocol.file.allow=always",
                  "submodule", "add", submodule_path, "sub"])
@@ -433,9 +429,8 @@ class TestIndexOrHeadView(TestCase, WriteViewMixin):
         repo.add_unmodified("file", "content\n")
         submodule_repo = Repo(submodule_repo_env)
         submodule_repo.add_unmodified("file", "content\n")
-        submodule_path = trim(
-            submodule_repo_env.cmd(["readlink", "-e", "."]).stdout_output.decode(),
-            suffix="\n")
+        submodule_path = (submodule_repo_env.cmd(["readlink", "-e", "."])
+                          .stdout_output.decode().removesuffix("\n"))
         env.cmd(["git",
                  "-c", "protocol.file.allow=always",
                  "submodule", "add", submodule_path, "sub"])
@@ -505,8 +500,8 @@ rsync -a {new_content}/ "$right"
         return diff_output
 
     def check(self, golden_dir, env, prefix=""):
-        repo_path = trim(
-            env.read_cmd(["readlink", "-e", "."]).stdout_output.decode(), suffix="\n")
+        repo_path = (env.read_cmd(["readlink", "-e", "."])
+                     .stdout_output.decode().removesuffix("\n"))
 
         self.assert_golden(
             self.write_diffs(env), os.path.join(golden_dir, "unmelded"))

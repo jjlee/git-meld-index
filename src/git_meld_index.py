@@ -29,15 +29,6 @@ class UnknownURISchemeError(ValueError):
     pass
 
 
-def trim(text, prefix="", suffix=""):
-    assert len(text) >= len(prefix) + len(suffix), (text, prefix, suffix)
-    assert text.startswith(prefix), (text, prefix)
-    assert text.endswith(suffix), (text, suffix)
-    start = len(prefix)
-    end = len(text) - len(suffix)
-    return text[start:end]
-
-
 class CalledProcessError(subprocess.CalledProcessError):
     def __init__(self, returncode, cmd, output=None, stderr_output=None):
         subprocess.CalledProcessError.__init__(self, returncode, cmd, output)
@@ -235,7 +226,7 @@ def pairwise(iterable):
 
 def parse_raw_diff(diff, path):
     mode_after, mode_before, hash_after, hash_before, status = diff.split(" ")
-    mode_after = trim(mode_after, prefix=":")
+    mode_after = mode_after.removeprefix(":")
     return DiffRecord(
         mode_after, mode_before, hash_after, hash_before, status, path)
 
@@ -429,7 +420,7 @@ class IndexOrHeadView:
             is_executable = try_cmd(src_env, ["test", "-x", path])
             permission = make_git_permission_string(is_link, is_executable)
             hash_object = repo_env.cmd(["git", "hash-object", "-w", src_path])
-            hash_ = trim(hash_object.stdout_output.decode(), suffix="\n")
+            hash_ = hash_object.stdout_output.decode().removesuffix("\n")
             index_info = "{} {}\t{}".format(permission, hash_, path)
             repo_env.cmd(
                 ["git", "update-index", "--index-info"],
@@ -595,7 +586,7 @@ area) using any git difftool (such as meld).
         print(env.cmd(["git", "mergetool", "--tool-help"]).stdout_output.decode())
         return 0
 
-    repo_dir = trim(env.read_cmd(repo_dir_cmd()).stdout_output.decode(), suffix="\n")
+    repo_dir = env.read_cmd(repo_dir_cmd()).stdout_output.decode().removesuffix("\n")
     left = arguments.left
     if left is None:
         left = "working:" + repo_dir
@@ -605,9 +596,8 @@ area) using any git difftool (such as meld).
     tool = arguments.tool
     if arguments.gui:
         try:
-            tool = trim(
-                env.cmd(["git", "config", "-z", "diff.guitool"]).stdout_output,
-                suffix=b"\0").decode()
+            tool = (env.cmd(["git", "config", "-z", "diff.guitool"])
+                    .stdout_output.removesuffix(b"\0").decode())
         except CalledProcessError:
             pass
     with cleanups:
