@@ -6,7 +6,7 @@ on:
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
-    name: Run tests against latest git
+    name: Run tests against the latest git binary from Arch Linux
     steps:
       - name: Check out
         uses: actions/checkout@v3

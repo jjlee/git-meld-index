@@ -1,5 +1,12 @@
 FROM archlinux:latest
 
+# This Dockerfile's main reason for existing is to run the git-meld-index tests
+# regularly against a recent git binary in order to check for regressions caused
+# by upstream changes to git itself
+
+# Releases of git-meld-index are mostly automated (see release.py) but don't
+# involve docker, and the release process does not run in CI
+
 RUN pacman --noconfirm -Syu && pacman --noconfirm -S git rsync python-pip diffutils
 
 RUN git --version
