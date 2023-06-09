@@ -27,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Run tests against an older git binary from Debian
     steps:
+      - name: Check out
+        uses: actions/checkout@v3
       - name: Build Debian docker image
         uses: docker/build-push-action@v4
         with:
