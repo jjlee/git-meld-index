@@ -23,6 +23,10 @@ jobs:
           image: test-image:latest
           run: python3 /opt/test/src/test_git_meld_index.py
 
+  build-and-run-with-old-git:
+    runs-on: ubuntu-latest
+    name: Run tests against an older git binary from Debian
+    steps:
       - name: Build Debian docker image
         uses: docker/build-push-action@v4
         with:
