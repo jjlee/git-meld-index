@@ -1,6 +1,6 @@
 FROM python:3.11-bullseye
 
-RUN apt update && apt full-upgrade && apt install git rsync
+RUN apt-get update && apt-get -y dist-upgrade && apt-get install -y git rsync
 
 RUN git --version
 
