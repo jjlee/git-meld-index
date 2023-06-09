@@ -10,14 +10,27 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v3
-      - name: Build docker image
+      - name: Build Arch Linux docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: ci/Dockerfile
           push: false
           tags: test-image:latest
-      - name: Run tests in docker
+      - name: Run tests in Arch Linux docker against recent git
+        uses: addnab/docker-run-action@v3
+        with:
+          image: test-image:latest
+          run: python3 /opt/test/src/test_git_meld_index.py
+
+      - name: Build Debian docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ci/Dockerfile.debian
+          push: false
+          tags: test-image:latest
+      - name: Run tests in Debian docker against older git
         uses: addnab/docker-run-action@v3
         with:
           image: test-image:latest
