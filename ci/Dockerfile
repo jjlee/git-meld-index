@@ -18,7 +18,9 @@ COPY doc /opt/test/doc
 COPY setup.py README.md release.py /opt/test
 
 WORKDIR /opt/test
-RUN pip install -e .
+# git-meld-index has no PyPI dependencies so is unlikely to break anything; this
+# just saves messing with a venv here
+RUN pip install --break-system-packages .
 
 RUN git config --global user.name "Your Name"
 RUN git config --global user.email "you@example.com"
