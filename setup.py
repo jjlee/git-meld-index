@@ -58,6 +58,7 @@ setup(
     long_description=read_text("README.md"),
     package_dir={"": "src"},
     platforms=["any"],
+    python_requires='>3.9',
     py_modules=["git_meld_index"],
     scripts=scripts,
     version=read_version("src/git_meld_index.py"),
