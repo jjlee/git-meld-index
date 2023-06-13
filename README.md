@@ -17,14 +17,13 @@ because meld allows you, for example, to:
 
 ## Requirements
 
-Python 3.
+Python 3.9 or newer.
 
 git-meld-index is probably a little bit fragile to what git version you have
 (fragile as in maybe breaking completely sometimes, not fragile as in subtle
-bugs).  I'm using the latest git from the Arch Linux rolling release (2.39.2 at
-time of writing).  I've set up CI to track recent git releases so I hope I'll
-notice when it does break.  If you notice it's not working for an old git
-version let me know and I'll take a look when I can.
+bugs).  CI builds against git versions from the Arch Linux rolling release (git
+2.41.0 at the time of writing), and Debian bullseye (git 2.30.2).  If you notice
+it's not working for some other old git version, please create an issue.
 
 I have only tested on Linux.  Probably it isn't working on anything else (should
 be easy to fix for other unix-y systems -- I'd guess it will only fail because
