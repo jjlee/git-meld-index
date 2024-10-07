@@ -32,6 +32,20 @@ of its use of the `-T` option of the `ln` command).
 
 ## Install
 
+To install via [pipx](https://github.com/pypa/pipx):
+
+```
+pipx install https://github.com/jjlee/git-meld-index/archive/release.zip
+```
+
+To install via [uv](https://github.com/astral-sh/uv):
+
+```
+uv tool install --from https://github.com/jjlee/git-meld-index/archive/release.zip git-meld-index
+```
+
+### Installing via pip
+
 To install from the latest release
 
 ```
@@ -49,6 +63,8 @@ To install from the master branch:
 ```
 pip install https://github.com/jjlee/git-meld-index/archive/master.zip
 ```
+
+### Installing via Git
 
 If you want to avoid installers you can clone the repo and run the
 script directly:
