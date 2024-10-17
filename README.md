@@ -32,23 +32,39 @@ of its use of the `-T` option of the `ln` command).
 
 ## Install
 
-To install from the latest release
+To install via [uv](https://github.com/astral-sh/uv):
+
+```
+uv tool install --from https://github.com/jjlee/git-meld-index/archive/release.zip git-meld-index
+```
+
+To install via [pipx](https://github.com/pypa/pipx):
+
+```
+pipx install https://github.com/jjlee/git-meld-index/archive/release.zip
+```
+
+### Installing via pip
 
 ```
 pip install https://github.com/jjlee/git-meld-index/archive/release.zip
 ```
 
-To install a specific release:
-
-```
-pip install https://github.com/jjlee/git-meld-index/archive/<release tag here>.zip
-```
+### Installing other versions
 
 To install from the master branch:
 
 ```
-pip install https://github.com/jjlee/git-meld-index/archive/master.zip
+uv tool install https://github.com/jjlee/git-meld-index/archive/master.zip git-meld-index
 ```
+
+To install a specific release:
+
+```
+uv tool install --from https://github.com/jjlee/git-meld-index/archive/<release tag here>.zip git-meld-index
+```
+
+### Running without installation
 
 If you want to avoid installers you can clone the repo and run the
 script directly:
@@ -58,7 +74,6 @@ git clone https://github.com/jjlee/git-meld-index.git
 cd git-meld-index
 env PATH="$PATH":bin python src/git_meld_index.py
 ```
-
 
 ## Configuration
 
