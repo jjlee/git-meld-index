@@ -98,17 +98,6 @@ class Releaser(object):
         message = "New release {}".format(self._tag_name)
         self._update_magic_version(self._tag_name, message)
 
-    def _update_tag_in_install_link(self, path, tag_name, message):
-        replacement = 's|/archive/release\\.zip|/archive/{0}.zip|'.format(tag_name)
-        self._env.cmd(["sed", "-i", "-e", replacement, path])
-        self._env.cmd(["git", "commit", "-am", message])
-
-    def update_version_in_readme(self, log):
-        path = "README.md"
-        message = "Update version(s) in {path} to {version}".format(
-            path=path, version=self._tag_name)
-        self._update_tag_in_install_link(path, self._tag_name, message)
-
     def build_manpage(self, log):
         xml = os.path.join(self._release_dir, "git-meld-index.xml")
         self._env.cmd([
@@ -163,7 +152,6 @@ class Releaser(object):
             self.build_manpage,
             self.commit_manpage,
             self.merge_to_release,
-            self.update_version_in_readme,
             self.build_manpage,
             self.commit_manpage,
             self.set_version,
