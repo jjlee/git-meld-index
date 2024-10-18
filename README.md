@@ -35,19 +35,19 @@ of its use of the `-T` option of the `ln` command).
 To install via [uv](https://github.com/astral-sh/uv):
 
 ```
-uv tool install --from https://github.com/jjlee/git-meld-index/archive/release.zip git-meld-index
+uv tool install --from https://github.com/jjlee/git-meld-index/archive/0.2.6.zip git-meld-index
 ```
 
 To install via [pipx](https://github.com/pypa/pipx):
 
 ```
-pipx install https://github.com/jjlee/git-meld-index/archive/release.zip
+pipx install https://github.com/jjlee/git-meld-index/archive/0.2.6.zip
 ```
 
 ### Installing via pip
 
 ```
-pip install https://github.com/jjlee/git-meld-index/archive/release.zip
+pip install https://github.com/jjlee/git-meld-index/archive/0.2.6.zip
 ```
 
 ### Installing other versions
