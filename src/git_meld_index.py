@@ -482,15 +482,18 @@ class NullCleanups:
 
 class TempMaker:
 
-    def __init__(self, add_cleanup, prefix=""):
+    def __init__(self, rmtree, add_cleanup, prefix=""):
         self._add_cleanup = add_cleanup
         self._prefix = prefix
+        self._rmtree = rmtree
 
     def make_temp_dir(self):
         prefix = "tmp-git_meld_index{}-".format(self._prefix)
         temp_dir = tempfile.mkdtemp(prefix=prefix)
+
         def clean_up():
-            shutil.rmtree(temp_dir)
+            self._rmtree(temp_dir)
+
         self._add_cleanup(clean_up)
         return temp_dir
 
@@ -534,6 +537,11 @@ def get_env_from_arguments(arguments):
 
 def repo_dir_cmd():
     return ["git", "rev-parse", "--show-toplevel"]
+
+
+def chmod_and_rmtree(env, dirpath):
+    env.cmd(["chmod", "-R", "u+w", dirpath])
+    shutil.rmtree(dirpath)
 
 
 def _main(prog, args):
@@ -605,7 +613,8 @@ area) using any git difftool (such as meld).
         except CalledProcessError:
             pass
     with cleanups:
-        make_temp_dir = TempMaker(cleanups.add_cleanup).make_temp_dir
+        make_temp_dir = TempMaker(
+            functools.partial(chmod_and_rmtree, env), cleanups.add_cleanup).make_temp_dir
         if work_dir is None:
             work_dir = make_temp_dir()
         work_area = WorkArea(env, work_dir)
