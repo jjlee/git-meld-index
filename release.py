@@ -99,7 +99,7 @@ class Releaser(object):
         self._update_magic_version(self._tag_name, message)
 
     def _update_tag_in_install_link(self, path, tag_name, message):
-        replacement = 's|/archive/master\\.zip|/archive/{0}.zip|'.format(tag_name)
+        replacement = 's|/archive/release\\.zip|/archive/{0}.zip|'.format(tag_name)
         self._env.cmd(["sed", "-i", "-e", replacement, path])
         self._env.cmd(["git", "commit", "-am", message])
 
