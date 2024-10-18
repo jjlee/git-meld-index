@@ -17,14 +17,13 @@ because meld allows you, for example, to:
 
 ## Requirements
 
-Python 3.
+Python 3.9 or newer.
 
 git-meld-index is probably a little bit fragile to what git version you have
 (fragile as in maybe breaking completely sometimes, not fragile as in subtle
-bugs).  I'm using the latest git from the Arch Linux rolling release (2.39.2 at
-time of writing).  I've set up CI to track recent git releases so I hope I'll
-notice when it does break.  If you notice it's not working for an old git
-version let me know and I'll take a look when I can.
+bugs).  CI builds against git versions from the Arch Linux rolling release (git
+2.41.0 at the time of writing), and Debian bullseye (git 2.30.2).  If you notice
+it's not working for some other old git version, please create an issue.
 
 I have only tested on Linux.  Probably it isn't working on anything else (should
 be easy to fix for other unix-y systems -- I'd guess it will only fail because
@@ -33,23 +32,39 @@ of its use of the `-T` option of the `ln` command).
 
 ## Install
 
-To install from the latest release
+To install via [uv](https://github.com/astral-sh/uv):
+
+```
+uv tool install --from https://github.com/jjlee/git-meld-index/archive/release.zip git-meld-index
+```
+
+To install via [pipx](https://github.com/pypa/pipx):
+
+```
+pipx install https://github.com/jjlee/git-meld-index/archive/release.zip
+```
+
+### Installing via pip
 
 ```
 pip install https://github.com/jjlee/git-meld-index/archive/release.zip
 ```
 
-To install a specific release:
-
-```
-pip install https://github.com/jjlee/git-meld-index/archive/0.2.4.zip
-```
+### Installing other versions
 
 To install from the master branch:
 
 ```
-pip install https://github.com/jjlee/git-meld-index/archive/master.zip
+uv tool install https://github.com/jjlee/git-meld-index/archive/master.zip git-meld-index
 ```
+
+To install a specific release:
+
+```
+uv tool install --from https://github.com/jjlee/git-meld-index/archive/<release tag here>.zip git-meld-index
+```
+
+### Running without installation
 
 If you want to avoid installers you can clone the repo and run the
 script directly:
@@ -59,7 +74,6 @@ git clone https://github.com/jjlee/git-meld-index.git
 cd git-meld-index
 env PATH="$PATH":bin python src/git_meld_index.py
 ```
-
 
 ## Configuration
 
@@ -124,8 +138,6 @@ but I'd guess it's not unlikely somebody might add a 'git addtool'.
 
 Patches welcome.
 
-CI testing against different git versions would be nice.
-
 It would make sense to add support for the equivalent of `git reset
 -p`.  One way to do this would be a 3-way diff with from left to
 right: working tree, index, HEAD.  Another way would be a --reset
@@ -160,7 +172,8 @@ meld (on e.g. untracked or modified files).
 Q. How can I abort my changes?
 
 A. Type Control-C at the command line from which you launched `git
-meld-index`. For `vimdiff` you can type `:cq` to quit with abort.
+meld-index`, or close meld and select "Close without Saving". For
+`vimdiff` you can type `:cq` to quit with abort.
 
 Q. Why not just use &lt;favourite staging tool&gt;?
 

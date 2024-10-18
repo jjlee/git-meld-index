@@ -182,7 +182,7 @@ Try running with --meld to update golden files.
                 subprocess.call(["meld", got_dir, expect_dir])
             raise AssertionError(
                 self.GOLDEN_FAILURE_TEXT + "\n{}".format(stdout))
-        self.assertEquals(proc.wait(), 0)
+        self.assertEqual(proc.wait(), 0)
 
     def assert_golden(self, got_dir, expect_dirname):
         expect_dir = os.path.join(self.this_dir, "golden", expect_dirname)
