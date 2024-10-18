@@ -1,7 +1,7 @@
 import errno
+import functools
 import os
 import subprocess
-import string
 import sys
 import unittest
 
@@ -150,7 +150,9 @@ class TestCase(unittest.TestCase):
 
     def make_temp_dir(self):
         prefix = "-" + self.__class__.__name__
-        maker = git_meld_index.TempMaker(self.addCleanup, prefix=prefix)
+        rmtree = functools.partial(
+            git_meld_index.chmod_and_rmtree, self._make_basic_env())
+        maker = git_meld_index.TempMaker(rmtree, self.addCleanup, prefix=prefix)
         return maker.make_temp_dir()
 
     # This meld functionality is unrelated to the function of git-meld-index,
@@ -222,12 +224,15 @@ Try running with --meld to update golden files.
         write_file(got_path, got_text)
         self._assert_golden_file(got_path, expect_path)
 
-    def make_env(self):
+    def _make_basic_env(self):
         if self.print_commands:
-            basic = git_meld_index.VerboseWrapper.make_readable(
+            return git_meld_index.VerboseWrapper.make_readable(
                 git_meld_index.BasicEnv.make_readable())
         else:
-            basic = git_meld_index.BasicEnv.make_readable()
+            return git_meld_index.BasicEnv.make_readable()
+
+    def make_env(self):
+        basic = self._make_basic_env()
         return git_meld_index.PrefixCmdEnv.make_readable(
             git_meld_index.in_dir(self.make_temp_dir()), basic)
 
