@@ -305,6 +305,10 @@ class StageableWorkingTreeSubsetView:
                 dest_env.cmd(["mkdir", "-p", dir_path])
             dest_env.cmd([
                 "cp", "-Pp", os.path.join(abs_repo_path, path), path])
+            # make it obvious that git-meld-index working does not apply this
+            # (left side) view back to the working copy changes (meld refuses
+            # to let you edit non-writeable files)
+            dest_env.cmd(["chmod", "-R", "a-w", path])
 
     def apply(self, env, dir_):
         pass
