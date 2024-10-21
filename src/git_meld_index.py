@@ -9,8 +9,8 @@ import functools
 import itertools
 import logging
 import os
-import pipes
 import pprint
+import shlex
 import shutil
 import subprocess
 import sys
@@ -172,7 +172,7 @@ class NullWrapper:
 
 
 def shell_escape(args):
-    return " ".join(pipes.quote(arg) for arg in args)
+    return " ".join(shlex.quote(arg) for arg in args)
 
 
 class WorkArea:
@@ -371,7 +371,7 @@ class IndexOrHeadView:
             # regular file
             cat_file_cmd = ["git", "cat-file", "blob", hash_]
             shell_cmd = " > ".join([
-                shell_escape(cat_file_cmd), pipes.quote(dest_path)])
+                shell_escape(cat_file_cmd), shlex.quote(dest_path)])
             repo_env.cmd(["sh", "-c", shell_cmd])
             if mode == "100755":
                 repo_env.cmd(["chmod", "+x", dest_path])
