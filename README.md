@@ -25,9 +25,7 @@ bugs).  CI builds against git versions from the Arch Linux rolling release (git
 2.41.0 at the time of writing), and Debian bullseye (git 2.30.2).  If you notice
 it's not working for some other old git version, please create an issue.
 
-I have only tested on Linux.  Probably it isn't working on anything else (should
-be easy to fix for other unix-y systems -- I'd guess it will only fail because
-of its use of the `-T` option of the `ln` command).
+I have only tested on Linux and Mac.
 
 
 ## Install
