@@ -53,7 +53,7 @@ pip install https://github.com/jjlee/git-meld-index/archive/release.zip
 To install from the master branch:
 
 ```
-uv tool install https://github.com/jjlee/git-meld-index/archive/master.zip git-meld-index
+uv tool install --from https://github.com/jjlee/git-meld-index/archive/master.zip git-meld-index
 ```
 
 To install a specific release:
