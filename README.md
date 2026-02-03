@@ -19,11 +19,9 @@ because meld allows you, for example, to:
 
 Python 3.9 or newer.
 
-git-meld-index is probably a little bit fragile to what git version you have
-(fragile as in maybe breaking completely sometimes, not fragile as in subtle
-bugs).  CI builds against git versions from the Arch Linux rolling release (git
-2.41.0 at the time of writing), and Debian bullseye (git 2.30.2).  If you notice
-it's not working for some other old git version, please create an issue.
+CI builds against git versions from the Arch Linux rolling release, and a Debian
+release (oldstable at the time of writing).  If you notice it's not working for
+some old git version, please create an issue.
 
 I have only tested on Linux and Mac.
 
