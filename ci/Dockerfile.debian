@@ -8,7 +8,7 @@ RUN mkdir /opt/test
 COPY src /opt/test/src
 COPY bin /opt/test/bin
 COPY doc /opt/test/doc
-COPY setup.py README.md release.py /opt/test
+COPY pyproject.toml README.md release.py /opt/test
 
 WORKDIR /opt/test
 RUN pip install -e .
