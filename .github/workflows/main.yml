@@ -18,10 +18,7 @@ jobs:
           push: false
           tags: test-image:latest
       - name: Run tests in Arch Linux docker against recent git
-        uses: addnab/docker-run-action@v3
-        with:
-          image: test-image:latest
-          run: python3 /opt/test/src/test_git_meld_index.py
+        run: docker run --rm test-image:latest
 
   build-and-run-with-old-git:
     runs-on: ubuntu-latest
@@ -37,7 +34,4 @@ jobs:
           push: false
           tags: test-image:latest
       - name: Run tests in Debian docker against older git
-        uses: addnab/docker-run-action@v3
-        with:
-          image: test-image:latest
-          run: python3 /opt/test/src/test_git_meld_index.py
+        run: docker run --rm test-image:latest
