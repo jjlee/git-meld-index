@@ -3,7 +3,7 @@ area) using any git difftool (such as meld).
 """
 
 # release.py updates this version, and pyproject.toml says to read it at build time
-__version__ = "0.0.0"
+__version__ = "0.2.10"
 
 from dataclasses import dataclass
 import argparse
