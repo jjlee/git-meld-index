@@ -1,0 +1,40 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "git-meld-index"
+authors = [
+    {name = "John Lee", email = "jjl@pobox.com"}
+]
+description = "Like git add -p but with meld (or any difftool)"
+license = "GPL-2.0-only"
+readme = "README.md"
+requires-python = ">3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Version Control",
+]
+dynamic = ["version"]
+
+[project.scripts]
+git-meld-index = "git_meld_index:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules=["git_meld_index"]
+script-files = ["bin/git-meld-index-run-merge-tool"]
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = {attr = "git_meld_index.__version__"}
+
+[tool.setuptools.data-files]
+"share/man/man1" = ["doc/git-meld-index.1"]

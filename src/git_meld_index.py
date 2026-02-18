@@ -1,6 +1,9 @@
-# The following line has to be the first non-blank / non-comment line after the
-# last __future__ import, for setup.py to read it.
-__version__ = "0.2.9"
+"""Interactively stage changes to the git index (also known as the git staging
+area) using any git difftool (such as meld).
+"""
+
+# release.py updates this version, and pyproject.toml says to read it at build time
+__version__ = "0.0.0"
 
 from dataclasses import dataclass
 import argparse
@@ -545,14 +548,8 @@ def chmod_and_rmtree(env, dirpath):
 
 
 def _main(prog, args):
-    # This is not __doc__ because it's tiresome for setup.py to parse out
-    # __version__ otherwise
-    description = """\
-Interactively stage changes to the git index (also known as the git staging
-area) using any git difftool (such as meld).
-"""
     parser = argparse.ArgumentParser(
-        prog=os.path.basename(prog), description=description)
+        prog=os.path.basename(prog), description=__doc__)
     add_basic_env_arguments(parser.add_argument)
     # Note there's also a manpage, which is what git meld-index --help shows
     parser.add_argument(
