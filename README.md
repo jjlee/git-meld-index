@@ -17,7 +17,7 @@ because meld allows you, for example, to:
 
 ## Requirements
 
-Python 3.9 or newer.
+Python 3.10 or newer.
 
 CI builds against git versions from the Arch Linux rolling release, and a Debian
 release (oldstable at the time of writing).  If you notice it's not working for
