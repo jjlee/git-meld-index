@@ -28,19 +28,19 @@ I have only tested on Linux and Mac.
 
 ## Install
 
-To install via [uv](https://github.com/astral-sh/uv):
+To install with [uv](https://github.com/astral-sh/uv):
 
 ```
 uv tool install --from https://github.com/jjlee/git-meld-index/archive/release.zip git-meld-index
 ```
 
-To install via [pipx](https://github.com/pypa/pipx):
+or with [pipx](https://github.com/pypa/pipx):
 
 ```
 pipx install https://github.com/jjlee/git-meld-index/archive/release.zip
 ```
 
-### Installing via pip
+or with pip:
 
 ```
 pip install https://github.com/jjlee/git-meld-index/archive/release.zip
